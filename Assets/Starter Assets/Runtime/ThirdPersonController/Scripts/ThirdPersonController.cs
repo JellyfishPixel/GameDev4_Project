@@ -92,7 +92,8 @@ namespace StarterAssets
         private float _fallTimeoutDelta;
 
         // animation IDs
-        private int _animIDSpeed;
+        private int _animIDWalk;
+        private int _animIDRun;
         private int _animIDGrounded;
         private int _animIDJump;
         private int _animIDFreeFall;
@@ -168,7 +169,8 @@ namespace StarterAssets
 
         private void AssignAnimationIDs()
         {
-            _animIDSpeed = Animator.StringToHash("Walk");
+            _animIDWalk = Animator.StringToHash("Walk");
+            _animIDRun = Animator.StringToHash("Run");
             _animIDGrounded = Animator.StringToHash("Grounded");
             _animIDJump = Animator.StringToHash("Jump");
             _animIDFreeFall = Animator.StringToHash("FreeFall");
@@ -271,14 +273,21 @@ namespace StarterAssets
                              new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
 
             // update animator if using character
-            if (_speed > 0.0f)
+            if (_speed > 0.0f && _speed < 5.0f)
             {
-                _animator.SetBool(_animIDSpeed, true);
+                _animator.SetBool(_animIDWalk, true);
+                _animator.SetBool(_animIDRun, false);
             }
 
+            if (_speed > 5.0f)
+            {
+                _animator.SetBool(_animIDRun, true);
+                _animator.SetBool(_animIDWalk, false);
+            }
             if (_speed <= 0.0f)
             {
-                _animator.SetBool(_animIDSpeed, false);
+                _animator.SetBool(_animIDWalk, false);
+                _animator.SetBool(_animIDRun, false);
             }
         }
 
