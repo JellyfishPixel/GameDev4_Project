@@ -6,18 +6,18 @@ TerrainLayer:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Pebbles_C_TerrainLayer
-  m_DiffuseTexture: {fileID: 2800000, guid: 8e255f57d15705e488d4db5425239501, type: 3}
-  m_NormalMapTexture: {fileID: 2800000, guid: 297a3ddfc901318499e15b3a0c8ec74d, type: 3}
-  m_MaskMapTexture: {fileID: 2800000, guid: 37bf2efdabb269f4b891344af9233d9e, type: 3}
-  m_TileSize: {x: 10, y: 10}
-  m_TileOffset: {x: 35.88, y: 0}
+  m_Name: NewLayer
+  m_DiffuseTexture: {fileID: 2800000, guid: e318f31bebce62d48a648da3f8ba56c9, type: 3}
+  m_NormalMapTexture: {fileID: 2800000, guid: eb70932bab3d971408c011dbb45767a9, type: 3}
+  m_MaskMapTexture: {fileID: 2800000, guid: 0f48eac8617d0de4cbc056e1734e798b, type: 3}
+  m_TileSize: {x: 30, y: 30}
+  m_TileOffset: {x: 0, y: 0}
   m_Specular: {r: 0, g: 0, b: 0, a: 0}
   m_Metallic: 0
   m_Smoothness: 0
-  m_NormalScale: 0
+  m_NormalScale: 0.46
   m_DiffuseRemapMin: {x: 0, y: 0, z: 0, w: 0}
-  m_DiffuseRemapMax: {x: 0.3490566, y: 0.30906415, z: 0.23215558, w: 1}
+  m_DiffuseRemapMax: {x: 0.1551426, y: 0.8207547, z: 0, w: 1}
   m_MaskMapRemapMin: {x: 0, y: 0, z: 0, w: 0}
   m_MaskMapRemapMax: {x: 1, y: 1, z: 1, w: 1}
   m_SmoothnessSource: 1
