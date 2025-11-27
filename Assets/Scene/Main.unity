@@ -1398,6 +1398,7 @@ GameObject:
   - component: {fileID: 1695713976}
   - component: {fileID: 1695713975}
   - component: {fileID: 1695713979}
+  - component: {fileID: 1695713980}
   m_Layer: 0
   m_Name: Sphere
   m_TagString: pickable
@@ -1524,6 +1525,22 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &1695713980
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1695713974}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94ff6e85abbae2446989e997b0a85b0e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DeliveryItemInstance
+  data: {fileID: 11400000, guid: 12175a5ef6945214d9d42dc524468007, type: 2}
+  currentQuality: 100
+  isDamaged: 0
+  isBroken: 0
 --- !u!1001 &1771175904
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1590,6 +1607,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8616685848737228372, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1840589194}
+    - targetCorrespondingSourceObject: {fileID: 8616685848737228372, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1840589201}
   m_SourcePrefab: {fileID: 100100000, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
 --- !u!1 &1776941506
 GameObject:
@@ -1910,6 +1930,22 @@ MonoBehaviour:
   holdPoint: {fileID: 1507732944}
   holdLayerName: holdLayer
   scrollYawSpeed: 160
+  storeBoxKey: 101
+--- !u!114 &1840589201
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1840589187}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea1e7b91c7562c242a01fb11b6c50ac6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BoxInventory
+  maxSlots: 3
+  boxPrefab: {fileID: 0}
+  slots: []
 --- !u!1 &1926016743
 GameObject:
   m_ObjectHideFlags: 0

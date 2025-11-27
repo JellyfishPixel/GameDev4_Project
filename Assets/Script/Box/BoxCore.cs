@@ -43,9 +43,19 @@ public class BoxCore : MonoBehaviour
     public bool TapeDone => tapeDone;
     public bool LabelDone => labelDone;
 
-    public bool IsFinsihedClose => lidsClosed;   // เผื่อใช้กับเทปเดิม
+    public bool IsFinsihedClose => lidsClosed;  
 
     Rigidbody rb;
+
+    [Header("Box Type")]
+    public BoxKind boxType = BoxKind.Small; 
+
+    [Header("Item Data")]
+    [SerializeField] private DeliveryItemData currentItemData;
+    [SerializeField] private DeliveryItemInstance currentItemInstance;
+
+    public DeliveryItemData CurrentItemData => currentItemData;
+    public DeliveryItemInstance CurrentItemInstance => currentItemInstance;
 
     void Reset()
     {
@@ -94,12 +104,36 @@ public class BoxCore : MonoBehaviour
     void OnTriggerEnter(Collider other)
     {
         if (!itemArea) return;
-        if (other.CompareTag(pickableTag))
+        if (!other.CompareTag(pickableTag)) return;
+
+        hasItem = true;
+        if (step < BoxStep.ItemInside)
+            step = BoxStep.ItemInside;
+
+        var itemInst = other.GetComponentInParent<DeliveryItemInstance>();
+        if (itemInst && itemInst.data)
         {
-            hasItem = true;
-            if (step < BoxStep.ItemInside)
-                step = BoxStep.ItemInside;
+            // ❶ เช็คว่ากล่องประเภทนี้ใส่ของนี้ได้ไหม
+            if (!CanAccept(itemInst.data))
+            {
+                Debug.LogWarning($"[BoxCore] Item {itemInst.data.itemName} ใช้กับกล่อง {boxType} ไม่ได้");
+                return;
+            }
+
+            currentItemInstance = itemInst;
+            currentItemData = itemInst.data;
         }
+    }
+
+    public bool CanAccept(DeliveryItemData data)
+    {
+        if (data == null || data.allowedBoxTypes == null || data.allowedBoxTypes.Length == 0)
+            return true; // ไม่กำหนด = ใส่ได้ทุกกล่อง
+
+        foreach (var allowed in data.allowedBoxTypes)
+            if (allowed == boxType) return true;
+
+        return false;
     }
 
     void OnTriggerExit(Collider other)

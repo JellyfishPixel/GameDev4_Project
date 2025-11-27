@@ -20,6 +20,10 @@ public class PlayerInteractionSystem : MonoBehaviour
     public string holdLayerName = "holdLayer";
     public float scrollYawSpeed = 160f;
 
+    [Header("Box Inventory")]
+    public KeyCode storeBoxKey = KeyCode.E;   // กด E ตอนถือกล่อง = เก็บเข้าตัว
+
+
     // ---------- held state ----------
     public GameObject HeldObject { get; private set; }
     Rigidbody heldRb;
@@ -61,11 +65,20 @@ public class PlayerInteractionSystem : MonoBehaviour
 
     void Update()
     {
-        // Interact ด้วย E
+        // ❶ เก็บกล่องเข้า inventory ด้วย E
+        if (Input.GetKeyDown(storeBoxKey))
+        {
+            if (HeldObject != null)
+                StoreHeldBoxToInventory();
+            else
+                TryInteract();    // ถ้าไม่ได้ถืออะไร ใช้ E เป็น interact ปกติได้
+        }
+
+        // ❷ Interact ด้วยคลิกซ้าย (ถ้ายังใช้)
         if (Input.GetKeyDown(interactKey))
             TryInteract();
 
-        // Pickup / Drop ด้วย Mouse0
+        // ❸ Pickup / Drop ด้วย Mouse0 (ถ้ายังใช้)
         if (Input.GetKeyDown(pickupKey))
         {
             if (HeldObject == null) TryPickup();
@@ -74,6 +87,7 @@ public class PlayerInteractionSystem : MonoBehaviour
 
         HandleHoldRotation();
     }
+
 
     void LateUpdate()
     {
@@ -157,6 +171,52 @@ public class PlayerInteractionSystem : MonoBehaviour
         HeldObject.transform.localRotation = Quaternion.identity;
         targetLocalRot = Quaternion.identity;
 
+    }
+
+    public void StoreHeldBoxToInventory()
+    {
+        if (HeldObject == null) return;
+        if (BoxInventory.Instance == null) return;
+
+        var box = HeldObject.GetComponent<BoxCore>();
+        if (!box)
+        {
+            Debug.Log("[PlayerInteractionSystem] Held object is not a BoxCore");
+            return;
+        }
+
+        // ก่อนเก็บต้อง Drop เพื่อคืนค่า Rigidbody/Collider
+        Drop();
+
+        if (!BoxInventory.Instance.StoreBox(box))
+        {
+            Debug.Log("[PlayerInteractionSystem] Cannot store box (inventory full?)");
+        }
+    }
+
+    public void TakeBoxFromInventorySlot(int slotIndex)
+    {
+        if (HeldObject != null)
+        {
+            Debug.Log("[PlayerInteractionSystem] Already holding something");
+            return;
+        }
+
+        if (BoxInventory.Instance == null || holdPoint == null)
+            return;
+
+        var core = BoxInventory.Instance.SpawnBoxFromSlot(slotIndex, holdPoint);
+        if (!core) return;
+
+        var rb = core.GetComponent<Rigidbody>();
+        if (!rb)
+        {
+            Debug.LogError("[PlayerInteractionSystem] Spawned box has no Rigidbody");
+            return;
+        }
+
+        // ใช้ระบบ Grab เดิมให้มาถือในมือเลย
+        Grab(rb);
     }
 
     void Drop()
