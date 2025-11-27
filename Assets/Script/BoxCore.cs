@@ -89,7 +89,7 @@ public class BoxCore : MonoBehaviour
         }
     }
 
-    #region Item detection
+
 
     void OnTriggerEnter(Collider other)
     {
@@ -125,9 +125,43 @@ public class BoxCore : MonoBehaviour
         return false;
     }
 
-    #endregion
+    void PackItemsIntoBox()
+    {
+        if (!itemArea) return;
 
-    #region Step Rules API (ให้สคริปต์อื่นเรียก)
+        Bounds b = itemArea.bounds;
+        Collider[] contents = Physics.OverlapBox(b.center, b.extents, Quaternion.identity);
+
+        foreach (var col in contents)
+        {
+            if (!col.CompareTag(pickableTag))
+                continue;
+
+  
+            col.transform.SetParent(this.transform, true);
+
+
+            var itemRb = col.attachedRigidbody;
+            if (itemRb)
+            {
+                itemRb.isKinematic = true;
+                itemRb.useGravity = false;
+
+            }
+
+            foreach (var r in col.GetComponentsInChildren<Renderer>())
+                r.enabled = false;
+
+            foreach (var c in col.GetComponentsInChildren<Collider>())
+            {
+
+                if (c != itemArea)
+                    c.enabled = false;
+            }
+
+            Debug.Log($"[BoxCore] Packed item into box: {col.name}");
+        }
+    }
 
     public bool CanAddBubble()
     {
@@ -171,9 +205,7 @@ public class BoxCore : MonoBehaviour
         return true;
     }
 
-    /// <summary>
-    /// เรียกจาก TapeDragScaler เมื่อเทปทำเสร็จ
-    /// </summary>
+
     public void NotifyTapeDone()
     {
         tapeDone = true;
@@ -183,9 +215,7 @@ public class BoxCore : MonoBehaviour
         Debug.Log("[BoxCore] Tape done.");
     }
 
-    /// <summary>
-    /// เรียกจากสคริปต์ลาเบล เมื่อแปะลาเบลเสร็จ
-    /// </summary>
+
     public void NotifyLabelPasted()
     {
         labelDone = true;
@@ -193,20 +223,17 @@ public class BoxCore : MonoBehaviour
             step = BoxStep.Labeled;
 
         Debug.Log("[BoxCore] Label pasted → box is now pickable.");
-
+        PackItemsIntoBox();
         MakeBoxPickable();
     }
 
-    /// <summary>
-    /// ให้กล่องพร้อมถูกยก: เปิดฟิสิกส์ + เปลี่ยน tag
-    /// </summary>
     void MakeBoxPickable()
     {
-        // เปิดฟิสิกส์ให้กล่องตก/ถูกยกได้
+       
         rb.isKinematic = false;
         rb.useGravity = true;
 
-        // เปลี่ยนแท็กให้ไปอยู่ในระบบ pickup ตามที่คุณใช้
+        
         if (!string.IsNullOrEmpty(boxPickupTag))
             gameObject.tag = boxPickupTag;
 
@@ -216,5 +243,4 @@ public class BoxCore : MonoBehaviour
         // if (spawner) spawner.hasSpawnedBox = false;
     }
 
-    #endregion
 }

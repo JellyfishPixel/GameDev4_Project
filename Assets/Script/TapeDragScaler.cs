@@ -56,7 +56,7 @@ public class TapeDragScaler : MonoBehaviour
 
         tapeObject.SetActive(false);
         SetTapeScaleWorld(0f);
-
+        cube.SetActive(false);
         currentBox = FindAnyObjectByType<BoxCore>();
     }
 

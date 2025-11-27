@@ -1627,7 +1627,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 2, y: 2}
+  m_SizeDelta: {x: 5, y: 5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1776941508
 MonoBehaviour:
@@ -1902,8 +1902,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInteractionSystem
   playerCamera: {fileID: 1251167099}
-  interactKey: 101
-  interactDistance: 3
+  interactKey: 323
+  interactDistance: 2.95
   pickupKey: 323
   pickupDistance: 2.5
   pickableTag: pickable

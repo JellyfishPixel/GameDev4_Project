@@ -7,7 +7,7 @@ public class PlayerInteractionSystem : MonoBehaviour
     public Camera playerCamera;
 
     [Header("Interact")]
-    public KeyCode interactKey = KeyCode.E;
+    public KeyCode interactKey = KeyCode.Mouse0;
     public float interactDistance = 3f;
 
     [Header("Pickup")]
@@ -134,11 +134,7 @@ public class PlayerInteractionSystem : MonoBehaviour
         prevInterp = heldRb.interpolation;
         prevCdm = heldRb.collisionDetectionMode;
 
-#if UNITY_6000_0_OR_NEWER
         heldRb.linearVelocity = Vector3.zero;
-#else
-        heldRb.velocity = Vector3.zero;
-#endif
         heldRb.angularVelocity = Vector3.zero;
 
         heldRb.useGravity = false;
@@ -157,18 +153,37 @@ public class PlayerInteractionSystem : MonoBehaviour
         CacheAndSetLayerRecursive(HeldObject.transform, holdLayer);
 
         HeldObject.transform.SetParent(holdPoint, true);
-        HeldObject.transform.position = holdPoint.position;
-        HeldObject.transform.rotation = holdPoint.rotation;
-        targetLocalRot = HeldObject.transform.localRotation;
+        HeldObject.transform.localPosition = Vector3.zero;
+        HeldObject.transform.localRotation = Quaternion.identity;
+        targetLocalRot = Quaternion.identity;
+
     }
 
     void Drop()
     {
         if (!HeldObject) return;
 
+        // เอาออกจากมือ กลับไป parent เดิม
         HeldObject.transform.SetParent(originalParent, true);
 
+        // ให้กล่องตั้งตรงก่อนปล่อย
+        if (playerCamera)
+        {
+
+            Vector3 up = Vector3.up;
+
+
+            Vector3 forward = Vector3.ProjectOnPlane(playerCamera.transform.forward, up);
+            if (forward.sqrMagnitude < 0.0001f)
+                forward = Vector3.forward; 
+
+            forward.Normalize();
+            HeldObject.transform.rotation = Quaternion.LookRotation(forward, up);
+        }
+
+
         RestoreLayers();
+
 
         foreach (var s in colStates)
             if (s.col) s.col.enabled = s.enabled;
@@ -176,11 +191,12 @@ public class PlayerInteractionSystem : MonoBehaviour
 
         if (heldRb)
         {
-            heldRb.isKinematic = prevKinematic;
-            heldRb.useGravity = prevUseGravity;
-            heldRb.detectCollisions = prevDetectCollisions;
-            heldRb.interpolation = prevInterp;
-            heldRb.collisionDetectionMode = prevCdm;
+            heldRb.isKinematic = false;                   
+            heldRb.useGravity = true;                       
+            heldRb.detectCollisions = true;
+            heldRb.interpolation = RigidbodyInterpolation.Interpolate;
+            heldRb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+            heldRb.angularVelocity = Vector3.zero;
         }
 
         HeldObject = null;
@@ -188,6 +204,7 @@ public class PlayerInteractionSystem : MonoBehaviour
         originalParent = null;
         layerStates.Clear();
     }
+
 
     void HandleHoldRotation()
     {

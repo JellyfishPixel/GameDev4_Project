@@ -52,6 +52,7 @@ MonoBehaviour:
   pivotAtCenter: 1
   selectedDispenser: {fileID: 0}
   isTapeDone: 0
+  cube: {fileID: 5320570350790152291}
 --- !u!1 &1728392966829902260
 GameObject:
   m_ObjectHideFlags: 0
@@ -724,7 +725,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &4637981002249758706
 Transform:
   m_ObjectHideFlags: 0
@@ -1119,6 +1120,18 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: d97844c237c6db4448dbab25245de489, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d97844c237c6db4448dbab25245de489, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d97844c237c6db4448dbab25245de489, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d97844c237c6db4448dbab25245de489, type: 3}
       propertyPath: m_LocalPosition.x
       value: 1.3489616
       objectReference: {fileID: 0}
@@ -1204,7 +1217,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: d97844c237c6db4448dbab25245de489, type: 3}
       propertyPath: m_Name
-      value: box 1
+      value: box-M
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: d97844c237c6db4448dbab25245de489, type: 3}
       propertyPath: m_Layer
@@ -1350,12 +1363,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   pickableTag: pickable
   itemArea: {fileID: 0}
+  boxPickupTag: pickable
   leftLid: {fileID: 4819027451887089478}
   rightLid: {fileID: 6154243858181685386}
   step: 0
   hasItem: 0
   bubbleFull: 0
   lidsClosed: 0
+  tapeDone: 0
+  labelDone: 0
 --- !u!4 &3093471409491763370 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: d97844c237c6db4448dbab25245de489, type: 3}
