@@ -14,12 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DeliveryItemData
   itemName: SphereItem
   icon: {fileID: 0}
-  category: 2
-  breaksOnWater: 1
+  category: 0
   deliveryLimitDays: 3
-  baseReward: 100
   baseQuality: 100
+  baseReward: 100
   destinationId: 
-  safeImpactVelocity: 3
+  damagedThreshold: 80
+  brokenThreshold: 20
+  safeImpactVelocity: 1
   damagePerVelocity: 1
-  allowedBoxTypes: 0100000002000000
+  minFallHeightForDamage: 2
+  breaksOnWater: 1
+  allowedBoxTypes: 010000000200000000000000
