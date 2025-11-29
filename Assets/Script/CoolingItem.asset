@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 564a82e0ceba4a845a2dfda6cd3e2e71, type: 3}
   m_Name: CoolingItem
   m_EditorClassIdentifier: Assembly-CSharp::DeliveryItemData
-  itemName: 
+  itemName: Cooling
   icon: {fileID: 0}
   category: 1
   deliveryLimitDays: 6

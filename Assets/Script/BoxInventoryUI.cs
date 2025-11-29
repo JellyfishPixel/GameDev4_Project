@@ -1,74 +1,46 @@
-﻿using TMPro;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
 
 public class BoxInventoryUI : MonoBehaviour
 {
-    [System.Serializable]
-    public class SlotWidget
-    {
-        public Image icon;
-        public TMP_Text nameText;
-        public Button takeOutButton;
-    }
+    [Header("Root Panel")]
+    [Tooltip("Panel หลักของ UI (เปิด/ปิด ทั้งก้อน)")]
+    public GameObject rootPanel;
 
-    [Header("Refs")]
-    public PlayerInteractionSystem player;
-    public GameObject panelRoot;
-    public KeyCode toggleKey = KeyCode.Tab;   // ปุ่มเปิด/ปิด Inventory
-    public SlotWidget[] slotsUI;
+    [Header("Slot UIs (สูงสุด 3 ช่อง)")]
+    public BoxInventorySlotUI[] slotUIs;   // ใส่ Slot1, Slot2, Slot3 ตามลำดับ
+
+    [Header("Toggle Key")]
+    [Tooltip("ปุ่มบนคีย์บอร์ดสำหรับเปิด/ปิด UI (ใช้ปุ่ม 1 ธรรมดา ไม่ใช่ Numpad)")]
+    public KeyCode toggleKey = KeyCode.Alpha1;
 
     void Start()
     {
-        if (panelRoot) panelRoot.SetActive(false);
-
-        // hook ปุ่ม Take Out
-        for (int i = 0; i < slotsUI.Length; i++)
-        {
-            int idx = i;
-            if (slotsUI[i].takeOutButton != null)
-                slotsUI[i].takeOutButton.onClick.AddListener(() => OnClickTakeOut(idx));
-        }
+        if (rootPanel != null)
+            rootPanel.SetActive(false);   // เริ่มเกมยังไม่ต้องโชว์
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(toggleKey) && panelRoot)
-            panelRoot.SetActive(!panelRoot.activeSelf);
-
-        if (panelRoot && panelRoot.activeSelf)
-            Refresh();
-    }
-
-    void Refresh()
-    {
-        var inv = BoxInventory.Instance;
-        if (inv == null) return;
-
-        for (int i = 0; i < slotsUI.Length; i++)
+        // กดปุ่ม 1 ธรรมดา (ไม่ใช่ Numpad) เพื่อเปิด/ปิด UI
+        if (Input.GetKeyDown(toggleKey))
         {
-            var w = slotsUI[i];
-            var slot = inv.GetSlot(i);
-
-            if (slot != null && slot.hasBox && slot.itemData != null)
-            {
-                if (w.icon) w.icon.sprite = slot.itemData.icon;
-                if (w.nameText) w.nameText.text = slot.itemData.itemName;
-                if (w.takeOutButton) w.takeOutButton.interactable = (player != null && player.HeldObject == null);
-            }
-            else
-            {
-                if (w.icon) w.icon.sprite = null;
-                if (w.nameText) w.nameText.text = "- EMPTY -";
-                if (w.takeOutButton) w.takeOutButton.interactable = false;
-            }
+            if (rootPanel != null)
+                rootPanel.SetActive(!rootPanel.activeSelf);
         }
-    }
 
-    void OnClickTakeOut(int index)
-    {
-        if (!player) return;
+        if (rootPanel == null || !rootPanel.activeSelf) return;
 
-        player.TakeBoxFromInventorySlot(index);
+        var inv = BoxInventory.Instance;
+        if (inv == null || slotUIs == null) return;
+
+        // อัปเดตแต่ละสล็อตให้ตรงกับ BoxInventory
+        for (int i = 0; i < slotUIs.Length; i++)
+        {
+            var ui = slotUIs[i];
+            if (ui == null) continue;
+
+            var slot = inv.GetSlot(i);
+            ui.Refresh(slot, i);
+        }
     }
 }
