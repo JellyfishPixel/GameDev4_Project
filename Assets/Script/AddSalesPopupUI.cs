@@ -68,14 +68,23 @@ public class AddSalesPopupUI : MonoBehaviour
     public static void ShowNotice(int amount)
     {
         if (Instance == null) return;
-        Instance.InternalShow(amount);
+        string msg = $"Delivery complete!\n+{amount:N0}$";
+        Instance.InternalShow(msg);
     }
 
-    void InternalShow(int amount)
+    // เอาไว้ใช้โชว์ข้อความอะไรก็ได้ เช่น "Shop OPEN", "Shop CLOSED"
+    public static void ShowMessage(string message)
+    {
+        if (Instance == null) return;
+        Instance.InternalShow(message);
+    }
+
+    void InternalShow(string message)
     {
         if (co != null) StopCoroutine(co);
-        co = StartCoroutine(Animate(amount));
+        co = StartCoroutine(Animate(message));
     }
+
 
     // หา screen-position ของ anchor
     Vector2 GetAnchorScreenPos()
@@ -92,13 +101,13 @@ public class AddSalesPopupUI : MonoBehaviour
         return RectTransformUtility.WorldToScreenPoint(camForUI, anchorAt.position);
     }
 
-    IEnumerator Animate(int amount)
+    IEnumerator Animate(string message)
     {
         // 1) ข้อความ popup
         if (priceText)
         {
-            // ตัวอย่าง: "Delivery complete!  +100$"
-            priceText.text = $"Delivery complete!\n+{amount:N0}$";
+            // ใช้ข้อความที่ส่งมาเลย
+            priceText.text = message;
         }
 
         // 2) ย้าย parent ไปอยู่ใต้ popupLayer
@@ -154,4 +163,5 @@ public class AddSalesPopupUI : MonoBehaviour
         HideImmediate();
         co = null;
     }
+
 }

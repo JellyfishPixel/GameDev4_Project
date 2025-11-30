@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using TMPro;   // ✅ เพิ่มสำหรับ TextMeshPro
+using TMPro; 
 
 public class GameManager : MonoBehaviour
 {
@@ -28,7 +28,8 @@ public class GameManager : MonoBehaviour
     public int maxActiveBoxes = 3;
 
     public bool shopIsOpen = true;
-
+    [Header("Customer State")]
+    public NPC currentCustomer;
     [System.Serializable]
     public class DeliveryRecord
     {

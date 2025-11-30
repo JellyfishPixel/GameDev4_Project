@@ -32,6 +32,9 @@ public class NPCSpawner : MonoBehaviour
     [Header("Shop State")]
     [Tooltip("ร้านเปิดอยู่หรือไม่")]
     public bool shopIsOpen = true;
+    [Header("Inventory Lock")]
+    [Tooltip("ล็อกการ spawn NPC ถ้า inventory เคยเต็มจนกว่าจะเคลียร์กล่องหมด")]
+    [SerializeField] private bool inventoryLocked = false;
 
     float nextSpawnTime;
 
@@ -50,17 +53,44 @@ public class NPCSpawner : MonoBehaviour
         if (!shopIsOpen)
             return;
 
+        // ===== เช็คสภาพ inventory ก่อน =====
+        var inv = BoxInventory.Instance;
+        if (inv != null)
+        {
+            int used = inv.GetUsedSlotCount();   // ใช้ method ที่เราเพิ่งเพิ่ม
+
+            // ถ้ามีของครบ maxSlots → เข้าสู่โหมดล็อก
+            if (used >= inv.maxSlots)
+            {
+                inventoryLocked = true;
+            }
+
+            if (inventoryLocked)
+            {
+                // ถ้ายังเหลือกล่องใน inventory (1–maxSlots) → ห้าม spawn
+                if (used > 0)
+                    return;
+
+                // ถ้ากล่องใน inventory กลับมาเหลือ 0 → ปลดล็อก แล้วค่อยไปทำงานต่อได้
+                if (used == 0)
+                {
+                    inventoryLocked = false;
+                    // ไม่ return เพื่อให้โค้ดด้านล่างเริ่ม spawn NPC ได้ตามปกติ
+                }
+            }
+        }
+
+        // ===== เช็คจำนวน NPC ที่มีอยู่ในร้านตอนนี้ =====
         if (CountAlive() >= maxAlive)
             return;
 
+        // ===== เวลา spawn NPC ตาม timer เดิม =====
         if (Time.time >= nextSpawnTime)
         {
             SpawnNPC();
             ScheduleNextSpawn();
         }
     }
-
-    // ================= SPAWN CONTROL =================
 
     void ScheduleNextSpawn()
     {
@@ -148,9 +178,6 @@ public class NPCSpawner : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// ปิดร้านและไล่ลูกค้าทั้งหมดออก
-    /// </summary>
     public void CloseShopAndClearNPCs()
     {
         shopIsOpen = false;
@@ -163,4 +190,5 @@ public class NPCSpawner : MonoBehaviour
 
         Debug.Log("[NPCSpawner] Shop CLOSED → all customers leaving.");
     }
+
 }

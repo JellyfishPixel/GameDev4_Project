@@ -3,33 +3,63 @@ using TMPro;
 
 public class ShopSignInteract : MonoBehaviour, IInteractable
 {
-    public TMP_Text signLabel;   // ตัวหนังสือบนป้าย (OPEN / CLOSED)
+    public TMP_Text signLabel;
     public string openText = "OPEN";
     public string closedText = "CLOSED";
 
     public void Interact(PlayerInteractionSystem player)
     {
-        var gm = FindFirstObjectByType<GameManager>();
-        if (!gm) return;
-
-        gm.shopIsOpen = !gm.shopIsOpen;
-
-        // อัปเดตสปอว์น
-        if (NPCSpawner.Instance != null)
-            NPCSpawner.Instance.SetSpawningEnabled(gm.shopIsOpen);
-
-        // อัปเดตตัวหนังสือป้าย
-        if (signLabel)
-            signLabel.text = gm.shopIsOpen ? openText : closedText;
-
-        // ถ้าปิดร้าน → ไลน์ลูกค้าที่เหลือให้ออก
-        if (!gm.shopIsOpen)
+        var gm = GameManager.Instance;
+        if (gm == null)
         {
-            var allCustomers = FindObjectsByType<NPC>(FindObjectsSortMode.None);
-            foreach (var c in allCustomers)
+            Debug.LogWarning("[ShopSignInteract] GameManager.Instance is null");
+            return;
+        }
+
+        // ถ้าร้านกำลัง "เปิดอยู่" → พยายามจะปิด
+        if (gm.shopIsOpen)
+        {
+            // ถ้ายังมีลูกค้าที่กำลังให้บริการอยู่ ห้ามปิด
+            if (gm.currentCustomer != null)
             {
-                c.ForceExitAndClearItem(); // ลบของแล้วออกทาง exitPoint
+                Debug.Log("[ShopSignInteract] Cannot close: still serving current customer.");
+                AddSalesPopupUI.ShowMessage("Cannot close shop while\na customer is being served.");
+                return;
             }
+
+            // ปิดร้าน
+            gm.shopIsOpen = false;
+
+            // บอก Spawner ให้หยุด + ไล่ลูกค้าที่เหลือออก
+            if (NPCSpawner.Instance != null)
+            {
+                NPCSpawner.Instance.CloseShopAndClearNPCs();
+            }
+
+            // อัปเดตป้าย
+            if (signLabel != null)
+                signLabel.text = closedText;
+
+            // popup แจ้งเตือน
+            AddSalesPopupUI.ShowMessage("Shop CLOSED");
+        }
+        else
+        {
+            // เปิดร้าน
+            gm.shopIsOpen = true;
+
+            // เปิดให้ Spawner กลับมาทำงานต่อ (เริ่มนับเวลาสุ่ม spawn ใหม่)
+            if (NPCSpawner.Instance != null)
+            {
+                NPCSpawner.Instance.shopIsOpen = true;   // หรือเขียนเมธอด OpenShop() เพิ่มก็ได้
+            }
+
+            // อัปเดตป้าย
+            if (signLabel != null)
+                signLabel.text = openText;
+
+            // popup แจ้งเตือน
+            AddSalesPopupUI.ShowMessage("Shop OPEN");
         }
     }
 }

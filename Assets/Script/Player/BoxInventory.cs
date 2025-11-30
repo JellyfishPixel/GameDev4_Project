@@ -254,4 +254,19 @@ public class BoxInventory : MonoBehaviour
         }
     }
 
+    public int GetUsedSlotCount()
+    {
+        int count = 0;
+        if (slots == null) return 0;
+
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if (slots[i] != null && slots[i].hasBox)
+                count++;
+        }
+
+        return count;
+    }
+
+
 }

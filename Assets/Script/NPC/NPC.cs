@@ -27,8 +27,7 @@ public class NPC : MonoBehaviour, IInteractable
     public ItemDialogueManager itemDialogueManager;
 
     protected Animator Animation;
-    bool isAtTable = false;
-
+    
 
     protected virtual void Start()
     {
@@ -45,7 +44,6 @@ public class NPC : MonoBehaviour, IInteractable
         if (other.CompareTag("DialogTable"))
         {
             Debug.Log("[NPC] Reached table");
-            isAtTable = true;
 
             if (Animation)
                 Animation.SetBool("TableCollision", true);
@@ -57,7 +55,6 @@ public class NPC : MonoBehaviour, IInteractable
         if (other.CompareTag("DialogTable"))
         {
             Debug.Log("[NPC] Left table");
-            isAtTable = false;
 
             if (Animation)
                 Animation.SetBool("TableCollision", false);
@@ -120,6 +117,10 @@ public class NPC : MonoBehaviour, IInteractable
     {
         if (exitPoint == null)
         {
+            // ถ้าลูกค้าคนนี้เป็น currentCustomer อยู่ → เคลียร์ออก
+            if (GameManager.Instance != null && GameManager.Instance.currentCustomer == this)
+                GameManager.Instance.currentCustomer = null;
+
             Destroy(gameObject);
             state = State.Done;
             return;
@@ -128,10 +129,15 @@ public class NPC : MonoBehaviour, IInteractable
         MoveTowards(exitPoint.position);
         if (IsReached(exitPoint.position))
         {
+            // ถึงจุดออกแล้ว → ไม่ถือว่าเป็น currentCustomer อีกต่อไป
+            if (GameManager.Instance != null && GameManager.Instance.currentCustomer == this)
+                GameManager.Instance.currentCustomer = null;
+
             Destroy(gameObject);
             state = State.Done;
         }
     }
+
 
     protected void MoveTowards(Vector3 target)
     {
@@ -168,6 +174,12 @@ public class NPC : MonoBehaviour, IInteractable
 
         Debug.Log("[NPC] Accepted");
 
+        // แจ้ง GameManager ว่าตอนนี้ลูกค้าคนนี้คือ currentCustomer
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.currentCustomer = this;
+        }
+
         // spawn ของออกจากตัว NPC
         if (data != null && data.package != null)
         {
@@ -177,7 +189,6 @@ public class NPC : MonoBehaviour, IInteractable
                 Quaternion.identity
             );
 
-            // ตั้ง Owner ให้ BoxCore
             var box = spawnedPackageRef.GetComponent<BoxCore>();
             if (box != null)
                 box.ownerNPC = this;
@@ -188,6 +199,7 @@ public class NPC : MonoBehaviour, IInteractable
         // ยืนรอแพ็ค
         state = State.Waiting;
     }
+
 
     public void OnDeclineDelivery()
     {

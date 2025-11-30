@@ -62,6 +62,7 @@ public class BoxCore : MonoBehaviour
     [SerializeField] private DeliveryItemData currentItemData;
     [SerializeField] private DeliveryItemInstance currentItemInstance;
 
+
     public DeliveryItemData CurrentItemData => currentItemData;
     public DeliveryItemInstance CurrentItemInstance => currentItemInstance;
 
@@ -303,8 +304,7 @@ public class BoxCore : MonoBehaviour
             step = BoxStep.Taped;
 
         Debug.Log("[BoxCore] Tape done.");
-        // ยังไม่ต้องเปลี่ยน tag เพราะใช้กฎเดียวกับ BubbleDone (ห้ามยก)
-        UpdateBoxTag();
+        LabelSpawner.Instance?.PrintLabel();
     }
 
     public void NotifyLabelPasted()
@@ -312,17 +312,19 @@ public class BoxCore : MonoBehaviour
         labelDone = true;
         if (step < BoxStep.Labeled)
             step = BoxStep.Labeled;
+        
 
-        Debug.Log("[BoxCore] Label pasted → box is now pickable.");
         PackItemsIntoBox();
         MakeBoxPickable();
-        ownerNPC.HandleBoxStored();
+        if (ownerNPC != null)
+            ownerNPC.HandleBoxStored();
 
         if (GameManager.Instance != null && currentItemInstance != null)
         {
             GameManager.Instance.RegisterNewDelivery(this, currentItemInstance);
         }
     }
+
 
     void MakeBoxPickable()
     {
