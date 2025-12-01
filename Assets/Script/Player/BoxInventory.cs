@@ -18,22 +18,29 @@ public class BoxInventory : MonoBehaviour
     [Serializable]
     public class BoxSlot
     {
-        public bool hasBox;                 // มีของอยู่ใน slot ไหม
-        public BoxKind boxType;             // ประเภทกล่อง
-        public DeliveryItemData itemData;   // ข้อมูล item
+        public bool hasBox;
+        public BoxKind boxType;
+        public DeliveryItemData itemData;
 
         [Header("QUALITY")]
         [Range(0, 100)]
-        public float itemQuality = 100f;    // คุณภาพล่าสุดของของ
+        public float itemQuality = 100f;
 
         [Header("DELIVERY TIME")]
-        [Tooltip("จำนวนวันที่เหลือสำหรับการส่ง (หลังคำนวณจากกล่องเย็นแล้ว)")]
         public int remainingDays = 0;
 
+        [Header("PROTECTION SNAPSHOT")]
+        [Tooltip("ตัวหารดาเมจรวมที่เซฟมาจากกล่อง + บับเบิล ตอนเก็บเข้าช่องนี้")]
+        public int protectionDivisor = 1;
+
+        [Tooltip("เปอร์เซ็นต์การเซฟดาเมจ (0–100%)")]
+        public float protectionPercent = 0f;
+
         [Header("STATE")]
-        public bool isDamaged;              // เสียหายแล้วหรือยัง
-        public bool isBroken;               // พังแล้วหรือยัง (ส่งไม่ได้)
+        public bool isDamaged;
+        public bool isBroken;
     }
+
 
 
     public BoxSlot[] slots;
@@ -159,22 +166,29 @@ public class BoxInventory : MonoBehaviour
             Debug.Log("[BoxInventory] StoreBox: Inventory เต็มแล้ว");
             return false;
         }
-
         var slot = slots[free];
         slot.hasBox = true;
         slot.boxType = box.boxType;
         slot.itemData = box.CurrentItemData;
         slot.itemQuality = box.CurrentItemInstance.currentQuality;
         slot.remainingDays =
-    box.CurrentItemInstance.CalculateEffectiveDeadlineDays(
-        box.CurrentItemData.deliveryLimitDays,
-        box.boxType == BoxKind.ColdBox   // ถ้าเป็นกล่องเย็น
-    );
+            box.CurrentItemInstance.CalculateEffectiveDeadlineDays(
+                box.CurrentItemData.deliveryLimitDays,
+                box.boxType == BoxKind.ColdBox
+            );
 
-        // เซ็ตสถานะเริ่มต้น
+        // 🔹 ดึงค่าการเซฟจากกล่อง (รวมกล่อง + บับเบิล)
+        int div = box.GetTotalDamageDivisor();
+        slot.protectionDivisor = div;
+
+        float p01 = box.GetProtection01();
+        slot.protectionPercent = p01 * 100f;
+
+        // เซ็ตสถานะ
         UpdateItemState(slot);
 
-        Debug.Log($"[BoxInventory] StoreBox: slot={free}, item={slot.itemData.itemName}, quality={slot.itemQuality:F1}");
+        Debug.Log($"[BoxInventory] StoreBox: slot={free}, item={slot.itemData.itemName}, " +
+                  $"Q={slot.itemQuality:F1}, protectDiv={slot.protectionDivisor}, save={slot.protectionPercent:F0}%");
 
         Destroy(box.gameObject);
         return true;
@@ -237,22 +251,25 @@ public class BoxInventory : MonoBehaviour
             if (!s.hasBox || s.itemData == null) continue;
 
             var data = s.itemData;
-
             if (meters < data.minFallHeightMeter) continue;
 
             int perMeter = Mathf.Max(0, data.damagePerMeter);
             int raw = perMeter * meters;
 
-            int divisor = Mathf.Max(1, inventoryDamageDivisor);
+            // 🔹 ใช้ตัวหารเดียวกับที่กล่องเซฟมา (กล่อง + บับเบิล)
+            int divisor = Mathf.Max(1, s.protectionDivisor);
             int dmg = raw / divisor;
             if (dmg <= 0) dmg = 1;
 
             float oldQ = s.itemQuality;
             s.itemQuality = Mathf.Clamp(oldQ - dmg, 0f, 100f);
             UpdateItemState(s);
-            Debug.Log($"[BoxInventory] slot {i} {data.itemName}: fall={fallHeight:F2}m ({meters}m), dmg={dmg}, Q {oldQ:F0}→{s.itemQuality:F0}");
+
+            Debug.Log($"[BoxInventory] slot {i} {data.itemName}: fall={fallHeight:F2}m " +
+                      $"({meters}m), raw={raw}, div={divisor}, dmg={dmg}, Q {oldQ:F0}→{s.itemQuality:F0}");
         }
     }
+
 
     public int GetUsedSlotCount()
     {

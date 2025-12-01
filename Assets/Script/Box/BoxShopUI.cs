@@ -32,6 +32,36 @@ public class BoxShopUI : MonoBehaviour
 
     FirstPersonController fpc;
 
+    [Header("Bubble Price / unit")]
+    public int priceBubbleBasic = 5;
+    public int priceBubbleStrong = 10;
+    public int priceBubbleIce = 15;
+
+    [Header("Bubble Qty Text")]
+    public TMP_Text qtyBubbleBasicText;
+    public TMP_Text qtyBubbleStrongText;
+    public TMP_Text qtyBubbleIceText;
+
+    // ตัวแปรนับจำนวนที่ “เลือกซื้อรอบนี้”
+    int qtyBubbleBasic, qtyBubbleStrong, qtyBubbleIce;
+
+    [Header("Tape Price / roll")]
+    public int priceTapeRed = 5;
+    public int priceTapeBlue = 5;
+    public int priceTapeGreen = 5;
+
+    [Header("Tape Qty (rolls)")]
+    public TMP_Text qtyTapeRedText;
+    public TMP_Text qtyTapeBlueText;
+    public TMP_Text qtyTapeGreenText;
+
+    int qtyTapeRed, qtyTapeBlue, qtyTapeGreen;
+
+    [Header("Total Cost Text")]
+    public TMP_Text totalCostText; 
+
+
+
     public bool isOpen = false;
     public GameObject interactui;
 
@@ -40,6 +70,24 @@ public class BoxShopUI : MonoBehaviour
         if (rootPanel != null)
             rootPanel.SetActive(false);
         isOpen = false;
+    }
+    int CalculateCurrentTotalCost()
+    {
+        int totalCost =
+            qtyS * priceS +
+            qtyM * priceM +
+            qtyL * priceL +
+            qtyC * priceC +
+
+            qtyBubbleBasic * priceBubbleBasic +
+            qtyBubbleStrong * priceBubbleStrong +
+            qtyBubbleIce * priceBubbleIce +
+
+            qtyTapeRed * priceTapeRed +
+            qtyTapeBlue * priceTapeBlue +
+            qtyTapeGreen * priceTapeGreen;
+
+        return totalCost;
     }
 
     public void Open(BoxShopTerminal terminal, PlayerInteractionSystem player)
@@ -92,6 +140,9 @@ public class BoxShopUI : MonoBehaviour
     void ResetSelections()
     {
         qtyS = qtyM = qtyL = qtyC = 0;
+
+        qtyBubbleBasic = qtyBubbleStrong = qtyBubbleIce = 0;
+        qtyTapeRed = qtyTapeBlue = qtyTapeGreen = 0;
     }
 
     void RefreshUI()
@@ -100,45 +151,63 @@ public class BoxShopUI : MonoBehaviour
         if (qtyMText) qtyMText.text = qtyM.ToString();
         if (qtyLText) qtyLText.text = qtyL.ToString();
         if (qtyCText) qtyCText.text = qtyC.ToString();
+
+        if (qtyBubbleBasicText) qtyBubbleBasicText.text = qtyBubbleBasic.ToString();
+        if (qtyBubbleStrongText) qtyBubbleStrongText.text = qtyBubbleStrong.ToString();
+        if (qtyBubbleIceText) qtyBubbleIceText.text = qtyBubbleIce.ToString();
+
+        if (qtyTapeRedText) qtyTapeRedText.text = qtyTapeRed.ToString();
+        if (qtyTapeBlueText) qtyTapeBlueText.text = qtyTapeBlue.ToString();
+        if (qtyTapeGreenText) qtyTapeGreenText.text = qtyTapeGreen.ToString();
+
         var eco = EconomyManager.Instance;
         if (eco && cashText)
-        {
-            // โชว์เงินรวมทั้งสองกระเป๋า
             cashText.text = $"CASH : {eco.TotalFunds}$";
+
+        // 🔹 อัปเดตยอดรวมแบบเรียลไทม์
+        int total = CalculateCurrentTotalCost();
+        if (totalCostText)
+        {
+            totalCostText.text = $"TOTAL : {total}$";
+
+            // ถ้าอยากให้เปลี่ยนสีเวลาเงินไม่พอ:
+            if (eco != null && !eco.CanAfford(total) && total > 0)
+                totalCostText.color = Color.red;
+            else
+                totalCostText.color = Color.black;
         }
 
         if (messageText)
             messageText.text = string.Empty;
     }
 
-    // ========= ปุ่ม + / - =========
 
+
+    // ========= ปุ่ม + / - =========
     public void AddS(int delta) { qtyS = Mathf.Max(0, qtyS + delta); RefreshUI(); }
     public void AddM(int delta) { qtyM = Mathf.Max(0, qtyM + delta); RefreshUI(); }
     public void AddL(int delta) { qtyL = Mathf.Max(0, qtyL + delta); RefreshUI(); }
 
     public void AddC(int delta) { qtyC = Mathf.Max(0, qtyC + delta); RefreshUI(); }
+    public void AddBubbleBasic(int delta) { qtyBubbleBasic = Mathf.Max(0, qtyBubbleBasic + delta); RefreshUI(); }
+    public void AddBubbleStrong(int delta) { qtyBubbleStrong = Mathf.Max(0, qtyBubbleStrong + delta); RefreshUI(); }
+    public void AddBubbleIce(int delta) { qtyBubbleIce = Mathf.Max(0, qtyBubbleIce + delta); RefreshUI(); }
 
-    // hook กับปุ่มใน Inspector:
-    //  ปุ่ม S "-" => OnClick -> BoxShopUI.AddS -1
-    //  ปุ่ม S "+" => OnClick -> BoxShopUI.AddS  1  เป็นต้น
+    public void AddTapeRed(int delta) { qtyTapeRed = Mathf.Max(0, qtyTapeRed + delta); RefreshUI(); }
+    public void AddTapeBlue(int delta) { qtyTapeBlue = Mathf.Max(0, qtyTapeBlue + delta); RefreshUI(); }
+    public void AddTapeGreen(int delta) { qtyTapeGreen = Mathf.Max(0, qtyTapeGreen + delta); RefreshUI(); }
 
-    // ========= ปุ่ม Buy =========
 
     public void OnClickBuy()
     {
         var eco = EconomyManager.Instance;
         if (!eco) return;
 
-        int totalCost =
-            qtyS * priceS +
-            qtyM * priceM +
-            qtyL * priceL +
-            qtyC* priceC ;
+        int totalCost = CalculateCurrentTotalCost();
 
         if (totalCost <= 0)
         {
-            if (messageText) messageText.text = "เลือกจำนวนกล่องก่อน";
+            if (messageText) messageText.text = "เลือกของที่จะซื้อก่อน";
             return;
         }
 
@@ -149,22 +218,32 @@ public class BoxShopUI : MonoBehaviour
             return;
         }
 
-        // หักเงินรวม
         if (!eco.TrySpend(totalCost))
             return;
 
-        // เพิ่มสต็อกกล่องตามจำนวนที่เลือก
+ 
+
+        // กล่อง
         eco.AddBox(BoxSizeSimple.Small, qtyS);
         eco.AddBox(BoxSizeSimple.Medium, qtyM);
         eco.AddBox(BoxSizeSimple.Large, qtyL);
         eco.AddBox(BoxSizeSimple.ColdBox, qtyC);
+
+        // บับเบิล (ต้องไปเพิ่ม method เหล่านี้ใน EconomyManager เอง)
+        eco.AddBubble(BubbleType.Basic, qtyBubbleBasic);
+        eco.AddBubble(BubbleType.Strong, qtyBubbleStrong);
+        eco.AddBubble(BubbleType.Ice, qtyBubbleIce);
+
+        eco.AddTapeRoll(TapeColor.Red, qtyTapeRed);
+        eco.AddTapeRoll(TapeColor.Blue, qtyTapeBlue);
+        eco.AddTapeRoll(TapeColor.Green, qtyTapeGreen);
+
         ResetSelections();
         RefreshUI();
 
         if (messageText) messageText.text = "ซื้อสำเร็จ!";
     }
 
-    // ========= ปุ่มปิด (กากบาท) =========
 
     public void OnClickClose()
     {

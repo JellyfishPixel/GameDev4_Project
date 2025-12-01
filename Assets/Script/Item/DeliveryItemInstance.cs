@@ -99,19 +99,40 @@ public class DeliveryItemInstance : MonoBehaviour
             isBroken = currentQuality <= 0f;
         }
     }
-    public int CalculateEffectiveDeadlineDays(int baseDays, bool inColdBox)
+    public int CalculateEffectiveDeadlineDays(int baseDays, bool inColdBox, bool hasIceBubble)
     {
         if (data == null) return baseDays;
 
+        // ถ้าไม่ใช่ของที่ต้องเย็น → ใช้ baseDays ปกติ
         if (!data.requiresCold) return baseDays;
 
-        // ต้องการกล่องเย็น
-        if (inColdBox) return baseDays;
+        // ===== กรณีใช้กล่องเย็นถูกต้อง =====
+        if (inColdBox)
+        {
+            // ปกติใช้ baseDays
+            int result = baseDays;
 
-        // ใส่กล่องธรรมดา → เหลือ 1/3 (อย่างน้อย 1 วัน)
+            // ถ้ามี Ice bubble → เพิ่มเวลาอีก 1 วัน (ปรับได้ตามชอบ)
+            if (hasIceBubble)
+            {
+                result += 1;
+            }
+
+            return result;
+        }
+
+        // ===== ใส่กล่องธรรมดา (ผิดประเภท) =====
+        // ไม่ว่าจะมี Ice bubble หรือไม่ ก็ถือว่าผิด → ลดเหลือ 1/3
         int reduced = baseDays / 3;
         return Mathf.Max(1, reduced);
     }
+
+    // overload เก่า (ให้โค้ดเดิมที่เคยเรียกยังใช้ได้)
+    public int CalculateEffectiveDeadlineDays(int baseDays, bool inColdBox)
+    {
+        return CalculateEffectiveDeadlineDays(baseDays, inColdBox, false);
+    }
+
 
     public int CalculateReward(int dayCreated, int dayDelivered, int effectiveLimitDays)
     {

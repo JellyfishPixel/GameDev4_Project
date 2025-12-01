@@ -35,8 +35,45 @@ public class EconomyManager : MonoBehaviour
     const string KEY_BOX_M = "Eco_BoxM";
     const string KEY_BOX_L = "Eco_BoxL";
     const string KEY_BOX_Cold = "Eco_ColdBox";
+    const string KEY_TAPE_RED = "Eco_TapeRedUses";
+    const string KEY_TAPE_BLUE = "Eco_TapeBlueUses";
+    const string KEY_TAPE_GREEN = "Eco_TapeGreenUses";
+    const string KEY_BUBBLE_BASIC = "Eco_BubbleBasic";
+    const string KEY_BUBBLE_STRONG = "Eco_BubbleStrong";
+    const string KEY_BUBBLE_ICE = "Eco_BubbleIce";
+
+
 
     [SerializeField] bool loadFromSaveOnStart = false;   // เปิดใน Inspector ได้
+    [Header("Tape Stock (uses)")]
+    [Tooltip("จำนวนครั้งที่ยังใช้ได้ของเทปสีแดง (1 ม้วน = 10 ครั้ง)")]
+    public int tapeUsesRed = 0;
+
+    [Tooltip("จำนวนครั้งที่ยังใช้ได้ของเทปสีน้ำเงิน")]
+    public int tapeUsesBlue = 0;
+
+    [Tooltip("จำนวนครั้งที่ยังใช้ได้ของเทปสีเขียว")]
+    public int tapeUsesGreen = 0;
+    [Header("Bubble Stock")]
+    [Tooltip("จำนวนบับเบิลธรรมดา (Basic) ที่มีในสต็อก")]
+    public int bubbleStockBasic = 0;
+
+    [Tooltip("จำนวนบับเบิลกันแรง (Strong) ที่มีในสต็อก")]
+    public int bubbleStockStrong = 0;
+
+    [Tooltip("จำนวนบับเบิลน้ำแข็ง (Ice) ที่มีในสต็อก")]
+    public int bubbleStockIce = 0;
+    [Header("Bubble Uses (1 purchase = 3 uses)")]
+    public int bubbleUsesBasic = 0;
+    public int bubbleUsesStrong = 0;
+    public int bubbleUsesIce = 0;
+
+    // 1 ชิ้นจากร้าน = กดได้กี่ครั้ง
+    public const int BUBBLE_USES_PER_PURCHASE = 3;
+
+
+
+    public const int TAPE_USES_PER_ROLL = 10;
 
     void Awake()
     {
@@ -187,7 +224,121 @@ public class EconomyManager : MonoBehaviour
         UpdateMoneyUI();
     }
 
-    // ========== Save / Load ==========
+    int GetTapeUses(TapeColor color)
+    {
+        return color switch
+        {
+            TapeColor.Red => tapeUsesRed,
+            TapeColor.Blue => tapeUsesBlue,
+            TapeColor.Green => tapeUsesGreen,
+            _ => 0
+        };
+    }
+
+    void SetTapeUses(TapeColor color, int uses)
+    {
+        uses = Mathf.Max(0, uses);
+        switch (color)
+        {
+            case TapeColor.Red: tapeUsesRed = uses; break;
+            case TapeColor.Blue: tapeUsesBlue = uses; break;
+            case TapeColor.Green: tapeUsesGreen = uses; break;
+        }
+    }
+
+    public bool HasTapeUse(TapeColor color)
+    {
+        return GetTapeUses(color) > 0;
+    }
+
+    public int GetTapeRolls(TapeColor color)
+    {
+        // เผื่ออยากโชว์ใน UI ว่ามีกี่ "ม้วน" (ใช้ floor)
+        return GetTapeUses(color) / TAPE_USES_PER_ROLL;
+    }
+
+    /// <summary>
+    /// ซื้อเทปเป็น "ม้วน" (1 ม้วน = 10 ครั้ง)
+    /// </summary>
+    public void AddTapeRoll(TapeColor color, int rolls)
+    {
+        if (rolls <= 0) return;
+
+        int addUses = rolls * TAPE_USES_PER_ROLL;
+        int current = GetTapeUses(color);
+        SetTapeUses(color, current + addUses);
+
+        SaveToPrefs();
+        UpdateMoneyUI();
+    }
+
+    /// <summary>
+    /// ใช้เทปไป 1 ครั้ง (ถ้าไม่มีแล้วจะคืน false)
+    /// </summary>
+    public bool TryConsumeTapeUse(TapeColor color)
+    {
+        int current = GetTapeUses(color);
+        if (current <= 0) return false;
+
+        SetTapeUses(color, current - 1);
+
+        SaveToPrefs();
+        // ไม่จำเป็นต้อง UpdateMoneyUI เพราะเงินไม่เกี่ยว แต่จะเรียกก็ได้
+        return true;
+    }
+    // ========== API สต็อกบับเบิล ==========
+    int GetBubbleUses(BubbleType type)
+    {
+        return type switch
+        {
+            BubbleType.Basic => bubbleUsesBasic,
+            BubbleType.Strong => bubbleUsesStrong,
+            BubbleType.Ice => bubbleUsesIce,
+            _ => 0
+        };
+    }
+
+    void SetBubbleUses(BubbleType type, int uses)
+    {
+        uses = Mathf.Max(0, uses);
+
+        switch (type)
+        {
+            case BubbleType.Basic: bubbleUsesBasic = uses; break;
+            case BubbleType.Strong: bubbleUsesStrong = uses; break;
+            case BubbleType.Ice: bubbleUsesIce = uses; break;
+        }
+    }
+
+    /// <summary>ซื้อบับเบิลจากร้าน (1 หน่วย = 3 uses)</summary>
+    public void AddBubble(BubbleType type, int amount)
+    {
+        if (amount <= 0) return;
+
+        int addUses = amount * BUBBLE_USES_PER_PURCHASE;
+        int current = GetBubbleUses(type);
+
+        SetBubbleUses(type, current + addUses);
+        SaveToPrefs();
+    }
+
+    /// <summary>เช็คว่ายังเหลือ uses ไหม</summary>
+    public bool HasBubbleStock(BubbleType type)
+    {
+        return GetBubbleUses(type) > 0;
+    }
+
+    /// <summary>ใช้บับเบิล 1 ครั้ง</summary>
+    public bool TryConsumeBubble(BubbleType type)
+    {
+        int current = GetBubbleUses(type);
+        if (current <= 0) return false;
+
+        SetBubbleUses(type, current - 1);
+        SaveToPrefs();
+        return true;
+    }
+
 
     public void SaveToPrefs()
     {
@@ -198,6 +349,15 @@ public class EconomyManager : MonoBehaviour
         PlayerPrefs.SetInt(KEY_BOX_M, boxStockM);
         PlayerPrefs.SetInt(KEY_BOX_L, boxStockL);
         PlayerPrefs.SetInt(KEY_BOX_Cold, boxStockCold);
+        PlayerPrefs.SetInt(KEY_TAPE_RED, tapeUsesRed);
+        PlayerPrefs.SetInt(KEY_TAPE_BLUE, tapeUsesBlue);
+        PlayerPrefs.SetInt(KEY_TAPE_GREEN, tapeUsesGreen);
+
+        // 🔹 เซฟ "จำนวนครั้งที่ใช้ได้" แทน stock เดิม
+        PlayerPrefs.SetInt(KEY_BUBBLE_BASIC, bubbleUsesBasic);
+        PlayerPrefs.SetInt(KEY_BUBBLE_STRONG, bubbleUsesStrong);
+        PlayerPrefs.SetInt(KEY_BUBBLE_ICE, bubbleUsesIce);
+
         PlayerPrefs.Save();
     }
 
@@ -210,8 +370,17 @@ public class EconomyManager : MonoBehaviour
         boxStockM = PlayerPrefs.GetInt(KEY_BOX_M, 0);
         boxStockL = PlayerPrefs.GetInt(KEY_BOX_L, 0);
         boxStockCold = PlayerPrefs.GetInt(KEY_BOX_Cold, 0);
+        tapeUsesRed = PlayerPrefs.GetInt(KEY_TAPE_RED, 0);
+        tapeUsesBlue = PlayerPrefs.GetInt(KEY_TAPE_BLUE, 0);
+        tapeUsesGreen = PlayerPrefs.GetInt(KEY_TAPE_GREEN, 0);
+
+        // 🔹 โหลดกลับเข้า uses
+        bubbleUsesBasic = PlayerPrefs.GetInt(KEY_BUBBLE_BASIC, 0);
+        bubbleUsesStrong = PlayerPrefs.GetInt(KEY_BUBBLE_STRONG, 0);
+        bubbleUsesIce = PlayerPrefs.GetInt(KEY_BUBBLE_ICE, 0);
 
         Debug.Log($"[Eco] Load => Day={currentDay}, cashToday={cashToday}, bank={bankBalance}, S={boxStockS}, M={boxStockM}, L={boxStockL}");
         UpdateMoneyUI();
     }
+
 }

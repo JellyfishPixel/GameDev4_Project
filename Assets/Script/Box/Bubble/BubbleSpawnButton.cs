@@ -1,0 +1,48 @@
+﻿using UnityEngine;
+
+public class BubbleSpawnButton : MonoBehaviour, IInteractable
+{
+    public BubbleType bubbleType = BubbleType.Basic;
+    private BoxBubble targetBubble;
+
+    public void Interact(PlayerInteractionSystem interactor)
+    {
+        var currentBox = BoxCore.Current;
+        if (currentBox == null)
+        {
+            Debug.LogWarning("[BubbleSpawnButton] ไม่มีกล่องปัจจุบัน");
+            return;
+        }
+
+        // เช็ค eco ว่ามีบับเบิลไหม
+        var eco = EconomyManager.Instance;
+        if (eco == null)
+        {
+            Debug.LogWarning("[BubbleSpawnButton] ไม่มี EconomyManager");
+            return;
+        }
+
+        if (!eco.HasBubbleStock(bubbleType))
+        {
+            AddSalesPopupUI.ShowMessage("No bubble left.\nPlease buy more at the shop.");
+            return;
+        }
+
+        if (!eco.TryConsumeBubble(bubbleType))
+            return;
+
+        // ติด flag / type ให้กล่องถ้าต้องใช้
+        currentBox.hasIceBubble = (bubbleType == BubbleType.Ice);
+
+        if (targetBubble == null)
+            targetBubble = currentBox.GetComponentInChildren<BoxBubble>(true);
+
+        if (targetBubble == null)
+        {
+            Debug.LogWarning("[BubbleSpawnButton] ไม่พบ BoxBubble");
+            return;
+        }
+
+        targetBubble.AddBubble();
+    }
+}

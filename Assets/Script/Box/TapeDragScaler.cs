@@ -37,7 +37,7 @@ public class TapeDragScaler : MonoBehaviour
         selectedDispenser = dispenser;
         Debug.Log($"[TapeDragScaler] Dispenser selected: {dispenser.name}");
 
-        //if (cube != null)
+        if (currentBox.IsFinsihedClose)
          cube.SetActive(true);
     }
 
@@ -132,12 +132,11 @@ public class TapeDragScaler : MonoBehaviour
             }
         }
 
-        // ปล่อยเมาส์
         if (isDragging && Input.GetMouseButtonUp(0))
         {
             if (tapeVisible)
             {
-                lastWorldLength = currentWorldLength; // << เก็บเป็น “ความยาวโลกจริง”
+                lastWorldLength = currentWorldLength;
             }
             isDragging = false;
             tapeVisible = false;
@@ -147,13 +146,28 @@ public class TapeDragScaler : MonoBehaviour
             {
                 isTapeDone = true;
 
+                // 🔹 หัก 1 ครั้งจากม้วนของสีที่เลือก
+                if (selectedDispenser != null && EconomyManager.Instance != null)
+                {
+                    var eco = EconomyManager.Instance;
+                    bool ok = eco.TryConsumeTapeUse(selectedDispenser.tapeColor);
+                    if (!ok)
+                    {
+                        Debug.LogWarning("[TapeDragScaler] Tape finished but no stock left in eco.");
+                    }
+                }
+
                 if (BoxCore.Current != null)
                     BoxCore.Current.NotifyTapeDone();
 
                 GameObject.Destroy(cube);
             }
         }
+
+
     }
+
+
 
     /// <summary>
     /// เซ็ตความยาวเทปด้วยหน่วย "โลกจริง" และคงความหนา/ความกว้างตาม baseLocalScale

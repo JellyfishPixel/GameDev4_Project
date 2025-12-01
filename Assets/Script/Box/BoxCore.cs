@@ -46,6 +46,8 @@ public class BoxCore : MonoBehaviour
     public bool LabelDone => labelDone;
 
     public bool IsFinsihedClose => lidsClosed;
+    public BubbleType BubbleType => bubbleType;
+    public bool HasIceBubble => bubbleType == BubbleType.Ice;
 
     Rigidbody rb;
 
@@ -55,9 +57,26 @@ public class BoxCore : MonoBehaviour
     [Header("FALL DAMAGE (BOX)")]
     [Tooltip("ตัวหารดาเมจเวลาตกทั้งกล่อง (2=ครึ่ง)")]
     public int boxDamageDivisor = 2;
+    [Header("Protection (Box + Bubble)")]
+    [Tooltip("ตัวหารดาเมจรวมจากกล่อง + บับเบิล (1 = ไม่เซฟเลย)")]
+    [SerializeField] private int totalDamageDivisor = 1;
+
+    [Tooltip("เปอร์เซ็นต์การเซฟดาเมจโดยรวม (0–100%)")]
+    [SerializeField, Range(0f, 100f)] private float protectionPercent = 0f;
 
     [Header("COLD BOX")]
     public bool isColdBox = false;   // กล่องเย็นไหม
+
+    [Header("Bubble Protection")]
+    [Tooltip("ประเภทบับเบิลที่ใช้กับกล่องนี้")]
+    public BubbleType bubbleType = BubbleType.Basic;
+    [Header("Bubble Effects")]
+    [Tooltip("บับเบิลน้ำแข็งถูกใช้กับกล่องนี้หรือไม่ (ให้เครื่องบับเบิลเป็นคนตั้งค่า)")]
+    public bool hasIceBubble = false;
+
+
+    [Tooltip("บับเบิลน้ำแข็ง: เพิ่มเวลา deadline ได้ ถ้ากล่องนี้เป็นกล่องเย็น")]
+    public int extraDeadlineDaysWithIce = 1;   // ไว้ให้ GameManager ใช้ตอนคิดเวลา
 
     [SerializeField] private DeliveryItemData currentItemData;
     [SerializeField] private DeliveryItemInstance currentItemInstance;
@@ -113,7 +132,6 @@ public class BoxCore : MonoBehaviour
         }
     }
 
-    // ========= ดาเมจตอนกล่องตก =========
     void OnCollisionEnter(Collision collision)
     {
         if (!currentItemInstance) return;
@@ -123,11 +141,60 @@ public class BoxCore : MonoBehaviour
         float g = 9.81f;
         float approxHeight = (v * v) / (2f * g);
 
-        // กล่องช่วยลดดาเมจ → divisor เช่น 2 = ครึ่งหนึ่ง
-        currentItemInstance.ApplyFallHeight(approxHeight, Mathf.Max(1, boxDamageDivisor));
+        int divisor = GetTotalDamageDivisor();
+
+        // เพิ่มการป้องกันตามประเภทบับเบิล
+        switch (bubbleType)
+        {
+            case BubbleType.Basic:
+                divisor *= 2;  // ประมาณโดนดาเมจครึ่งหนึ่ง
+                break;
+            case BubbleType.Strong:
+                divisor *= 3;  // ประมาณโดนดาเมจ 1/3
+                break;
+            case BubbleType.Ice:
+                divisor *= 3;  // เท่า Strong แต่มีผลพิเศษกับเวลา (ไปทำใน GameManager)
+                break;
+        }
+
+        currentItemInstance.ApplyFallHeight(approxHeight, divisor);
     }
 
-    // ========= จัดการ TAG ตามสถานะ =========
+    public int GetTotalDamageDivisor()
+    {
+        // เริ่มจากกล่องก่อน
+        int divisor = Mathf.Max(1, boxDamageDivisor);
+
+        // เพิ่มตามบับเบิล
+        switch (bubbleType)
+        {
+            case BubbleType.Basic:
+                divisor *= 2;   // กันเพิ่ม
+                break;
+            case BubbleType.Strong:
+            case BubbleType.Ice:
+                divisor *= 3;   // กันเยอะกว่า
+                break;
+        }
+
+        return Mathf.Max(1, divisor);
+    }
+
+    // 0–1 (เช่น 0.66 = เซฟดาเมจ 66%)
+    public float GetProtection01()
+    {
+        int d = GetTotalDamageDivisor();
+        if (d <= 1) return 0f;
+        return 1f - 1f / (float)d;
+    }
+
+    // เรียกทุกครั้งที่ค่ากล่อง/บับเบิลเปลี่ยน เพื่ออัปเดต debug
+    public void RecalculateProtectionDebug()
+    {
+        totalDamageDivisor = GetTotalDamageDivisor();
+        protectionPercent = GetProtection01() * 100f;
+    }
+
     void UpdateBoxTag()
     {
 
@@ -264,6 +331,36 @@ public class BoxCore : MonoBehaviour
         }
         return true;
     }
+
+    public bool CanUseBubbleType(BubbleType type)
+    {
+        if (type == BubbleType.Basic) return false;
+
+        if (!HasItem)
+        {
+            Debug.Log("[BoxCore] ยังไม่มีของในกล่อง ใส่บับเบิลไม่ได้");
+            return false;
+        }
+
+        // Ice bubble ใช้ได้กับกล่องเย็นเท่านั้น
+        if (type == BubbleType.Ice && !isColdBox)
+        {
+            Debug.Log("[BoxCore] Ice bubble ใช้ได้เฉพาะ ColdBox เท่านั้น");
+            return false;
+        }
+
+        // ขั้นตอนกล่อง: ต้องอยู่ในช่วงใส่บับเบิลได้
+        if (!CanAddBubble())
+            return false;
+
+        return true;
+    }
+
+    public void ApplyBubbleType(BubbleType type)
+    {
+        bubbleType = type;
+    }
+
     public void NotifyBubbleStarted()
     {
         bubbleStarted = true;

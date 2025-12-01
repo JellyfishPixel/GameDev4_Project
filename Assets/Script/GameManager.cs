@@ -198,14 +198,24 @@ public class GameManager : MonoBehaviour
         if (rec == null || rec.itemInstance == null || rec.data == null) return;
 
         bool usedColdBox = false;
+        bool hasIceBubble = false;
+
         if (rec.box != null)
         {
             // ถ้าใช้ BoxKind.ColdBox ถือว่าเป็นกล่องเย็น
             usedColdBox = (rec.box.boxType == BoxKind.ColdBox);
+
+            // ตรงนี้ใช้ flag จาก BoxCore ที่เราเพิ่ม
+            hasIceBubble = rec.box.hasIceBubble;
         }
 
         int baseLimit = rec.data.deliveryLimitDays;
-        int effectiveLimit = rec.itemInstance.CalculateEffectiveDeadlineDays(baseLimit, usedColdBox);
+        int effectiveLimit = rec.itemInstance.CalculateEffectiveDeadlineDays(
+            baseLimit,
+            usedColdBox,
+            hasIceBubble
+        );
+
 
         int dayCreated = rec.dayCreated;
         int dayDelivered = currentDay;
