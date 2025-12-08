@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NUnit;
+using System;
 using UnityEngine;
 
 public class BoxInventory : MonoBehaviour
@@ -17,6 +18,7 @@ public class BoxInventory : MonoBehaviour
     [Header("Water Damage (Inventory)")]
     [Tooltip("ดาเมจต่อวินาทีสำหรับ item ที่ waterSensitive เมื่อผู้เล่นอยู่ในน้ำ")]
     public float waterSensitiveDamagePerSecond = 1f;
+
 
 
     [Serializable]
@@ -376,6 +378,15 @@ public class BoxInventory : MonoBehaviour
 
         return count;
     }
+
+    public int SlotCount
+    {
+        get
+        {
+            return slots != null ? slots.Length : 0;
+        }
+    }
+
 
 
 }

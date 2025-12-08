@@ -337,7 +337,7 @@ public class BoxCore : MonoBehaviour
 
     public bool CanUseBubbleType(BubbleType type)
     {
-        if (type == BubbleType.Basic) return false;
+        //if (type == BubbleType.Basic) return false;
 
         if (!HasItem)
         {

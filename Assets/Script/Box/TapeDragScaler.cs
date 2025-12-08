@@ -34,18 +34,30 @@ public class TapeDragScaler : MonoBehaviour
     public GameObject cube;
     public void SelectDispenser(TapeDispenser dispenser)
     {
+        if (dispenser == null) return;
+
+        var eco = EconomyManager.Instance;
+        if (eco != null && !eco.HasTapeUse(dispenser.tapeColor))
+        {
+            Debug.Log("[TapeDragScaler] No tape left for this color.");
+            AddSalesPopupUI.ShowMessage("No tape left.\nPlease buy more tape rolls at the shop.");
+            selectedDispenser = null;
+            cube.SetActive(false);
+            return;
+        }
+
         selectedDispenser = dispenser;
         Debug.Log($"[TapeDragScaler] Dispenser selected: {dispenser.name}");
 
-        if (currentBox.IsFinsihedClose)
-         cube.SetActive(true);
+        if (currentBox != null && currentBox.IsFinsihedClose)
+            cube.SetActive(true);
     }
-
 
     bool HasSelectedDispenser()
     {
         return selectedDispenser != null;
     }
+
 
     void Start()
     {
@@ -62,8 +74,12 @@ public class TapeDragScaler : MonoBehaviour
 
     void Update()
     {
-        if(!currentBox.IsFinsihedClose) return;
+        if (!currentBox) return;
 
+        // กล่องต้องปิดฝาก่อนถึงจะใช้เทปได้
+        if (!currentBox.IsFinsihedClose) return;
+
+        // ---- คลิกเลือก TapeDispenser ----
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -72,13 +88,25 @@ public class TapeDragScaler : MonoBehaviour
                 var dispenser = hit.collider.GetComponent<TapeDispenser>();
                 if (dispenser != null)
                 {
-                    selectedDispenser = dispenser;
-                    cube.SetActive(true);
-
+                    // ให้ไปผ่านฟังก์ชันที่เช็คสต็อกแล้ว
+                    SelectDispenser(dispenser);
+                    // ถ้าเทปหมด SelectDispenser จะไม่เซ็ต selectedDispenser
                 }
             }
         }
-        if (!currentBox || !currentBox.IsFinsihedClose && selectedDispenser == null) return;
+
+        // ---- บังคับต้องเลือกสีเทปก่อนถึงจะเริ่มลากได้ ----
+        if (!HasSelectedDispenser())
+        {
+            // ผู้เล่นพยายามจะเริ่มลากโดยไม่เลือกสี → เตือนครั้งที่คลิก
+            if (Input.GetMouseButtonDown(0))
+            {
+                AddSalesPopupUI.ShowMessage("Please select tape color before taping.");
+            }
+            return;
+        }
+
+        // ---- ด้านล่างคือตัว logic เดิมสำหรับลากเทป ----
 
         if (Input.GetMouseButtonDown(0))
         {
@@ -95,7 +123,6 @@ public class TapeDragScaler : MonoBehaviour
             }
         }
 
-        // ระหว่างลาก
         if (isDragging && Input.GetMouseButton(0))
         {
             Vector3 mouseWorld = GetMouseWorldPositionAtY(tapeStart.position.y);
@@ -112,21 +139,17 @@ public class TapeDragScaler : MonoBehaviour
                 tapeObject.SetActive(true);
                 tapeVisible = true;
 
-                // ใส่วัสดุจาก dispenser
-                if (selectedDispenser != null)
-                {
-                    var mat = selectedDispenser.GetMaterial();
-                    var r = tapeObject.GetComponentInChildren<Renderer>();
-                    if (r && mat) r.material = mat;
-                }
+                // ใส่วัสดุจาก dispenser ที่เลือก (ตอนนี้มั่นใจว่าไม่ null แล้ว)
+                var mat = selectedDispenser.GetMaterial();
+                var r = tapeObject.GetComponentInChildren<Renderer>();
+                if (r && mat) r.material = mat;
             }
 
             if (tapeVisible)
             {
-                // คำนวณ “ความยาวโลกจริง” ใหม่
                 float projected = Vector3.Dot((mouseWorld - tapeStart.position), guideDir);
                 float newLen = Mathf.Clamp(projected, 0f, guideLen);
-                newLen = Mathf.Max(newLen, lastWorldLength); // ลากต่อจากปลายเดิม
+                newLen = Mathf.Max(newLen, lastWorldLength);
 
                 SetTapeScaleWorld(newLen);
             }
@@ -146,7 +169,7 @@ public class TapeDragScaler : MonoBehaviour
             {
                 isTapeDone = true;
 
-                // 🔹 หัก 1 ครั้งจากม้วนของสีที่เลือก
+                // หัก 1 ครั้งจากสีที่เลือก (ตอนนี้มั่นใจว่า selectedDispenser != null แล้ว)
                 if (selectedDispenser != null && EconomyManager.Instance != null)
                 {
                     var eco = EconomyManager.Instance;
@@ -163,9 +186,8 @@ public class TapeDragScaler : MonoBehaviour
                 GameObject.Destroy(cube);
             }
         }
-
-
     }
+
 
 
 

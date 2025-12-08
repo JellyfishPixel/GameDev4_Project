@@ -209,6 +209,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   bubbleObject: {fileID: 1728392966829902260}
+  bubbleRenderer: {fileID: 6063434598721580234}
+  basicTexture: {fileID: 2800000, guid: 531b3a082726672488347e74e75f831f, type: 3}
+  strongTexture: {fileID: 2800000, guid: 05b7c0cdea8b6954995c68e86577907b, type: 3}
+  iceTexture: {fileID: 2800000, guid: fe48d3992da668e408fb2e43ce673f0f, type: 3}
   maxBubble: 3
   stepY: 0.01
   scaleDuration: 0.25
@@ -1440,12 +1444,15 @@ MonoBehaviour:
   tapeDone: 0
   labelDone: 0
   bubbleStarted: 0
-  labelPrefab: {fileID: 323539193064248935, guid: 8318f62f84cbf964c8b98af561345bbc, type: 3}
-  labelSpawnPoint: {fileID: 0}
-  labelTargetPoint: {fileID: 0}
+  isWaterproofBox: 0
   boxType: 0
   boxDamageDivisor: 2
+  totalDamageDivisor: 1
+  protectionPercent: 0
   isColdBox: 0
+  bubbleType: 0
+  hasIceBubble: 0
+  extraDeadlineDaysWithIce: 1
   currentItemData: {fileID: 0}
   currentItemInstance: {fileID: 0}
 --- !u!4 &3093471409491763370 stripped

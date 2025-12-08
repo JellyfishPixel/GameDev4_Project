@@ -6,6 +6,12 @@ public class BoxBubble : MonoBehaviour, IInteractable
     [Header("Visual")]
     public GameObject bubbleObject;
 
+    [Header("Bubble Texture")]
+    public Renderer bubbleRenderer;     // MeshRenderer ของบับเบิล
+    public Texture basicTexture;        // ลายสำหรับ Basic
+    public Texture strongTexture;       // ลายสำหรับ Strong
+    public Texture iceTexture;          // ลายสำหรับ Ice
+
     [Header("Logic")]
     public int maxBubble = 3;
     public float stepY = 0.001f;
@@ -23,12 +29,21 @@ public class BoxBubble : MonoBehaviour, IInteractable
 
     void Start()
     {
+        box = GetComponentInParent<BoxCore>();
+
         if (bubbleObject != null)
         {
             baseY = bubbleObject.transform.localScale.y;
             bubbleObject.SetActive(false);
         }
+
+        // หา Renderer อัตโนมัติถ้าไม่เซ็ตใน Inspector
+        if (bubbleRenderer == null && bubbleObject != null)
+        {
+            bubbleRenderer = bubbleObject.GetComponentInChildren<Renderer>();
+        }
     }
+
 
     // เผื่อยังอยากให้กดที่ Bubble ตรง ๆ ก็ยังใช้ได้
     public void Interact(PlayerInteractionSystem interactor)
@@ -93,7 +108,7 @@ public class BoxBubble : MonoBehaviour, IInteractable
             bubbleObject.SetActive(true);
             Debug.Log("bubbleObject.SetActive(true)");
         }
-
+        ApplyVisualByBubbleType();
         // 7. เพิ่มจำนวน
         bubbleCount++;
         Debug.Log("bubbleCount INCREASED -> " + bubbleCount);
@@ -129,6 +144,37 @@ public class BoxBubble : MonoBehaviour, IInteractable
             box.NotifyBubbleFull();
         }
         Debug.Log("========== AddBubble FINISHED ==========");
+    }
+    void ApplyVisualByBubbleType()
+    {
+        if (bubbleRenderer == null || box == null)
+            return;
+
+        Texture tex = null;
+
+        switch (box.BubbleType)
+        {
+            case BubbleType.Basic:   // ธรรมดา
+                tex = basicTexture;
+                break;
+
+            case BubbleType.Strong:  // แข็งแรง
+                tex = strongTexture;
+                break;
+
+            case BubbleType.Ice:     // น้ำแข็ง
+                tex = iceTexture;
+                break;
+        }
+
+        if (tex != null)
+        {
+            bubbleRenderer.material.mainTexture = tex;
+        }
+        else
+        {
+            Debug.LogWarning($"[BoxBubble] No texture set for BubbleType: {box.BubbleType}");
+        }
     }
 
 

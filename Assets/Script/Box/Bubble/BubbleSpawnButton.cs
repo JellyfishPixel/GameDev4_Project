@@ -14,6 +14,13 @@ public class BubbleSpawnButton : MonoBehaviour, IInteractable
             return;
         }
 
+        // ✅ เช็คว่ากล่องนี้ใช้บับเบิลชนิดนี้ได้ไหม (เช่น Ice ต้องใช้กับ ColdBox)
+        if (!currentBox.CanUseBubbleType(bubbleType))
+        {
+            AddSalesPopupUI.ShowMessage("This bubble type can't be used with this box.");
+            return;
+        }
+
         // เช็ค eco ว่ามีบับเบิลไหม
         var eco = EconomyManager.Instance;
         if (eco == null)
@@ -28,10 +35,12 @@ public class BubbleSpawnButton : MonoBehaviour, IInteractable
             return;
         }
 
+        // หักสต็อก
         if (!eco.TryConsumeBubble(bubbleType))
             return;
 
-        // ติด flag / type ให้กล่องถ้าต้องใช้
+        // ✅ เซ็ตประเภทบับเบิลให้กล่อง (ใช้ในเรื่องดาเมจ / ลาย / ฯลฯ)
+        currentBox.ApplyBubbleType(bubbleType);
         currentBox.hasIceBubble = (bubbleType == BubbleType.Ice);
 
         if (targetBubble == null)
@@ -43,6 +52,8 @@ public class BubbleSpawnButton : MonoBehaviour, IInteractable
             return;
         }
 
+        // ตรงนี้ AddBubble จะไปดู BoxCore.BubbleType แล้วเรียก ApplyVisualByBubbleType ให้เอง
         targetBubble.AddBubble();
     }
+
 }

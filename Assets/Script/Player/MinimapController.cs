@@ -1,6 +1,7 @@
 ﻿using StarterAssets;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class MinimapController : MonoBehaviour
@@ -21,6 +22,9 @@ public class MinimapController : MonoBehaviour
     List<Transform> deliveryTargets = new List<Transform>();
     List<RectTransform> deliveryIcons = new List<RectTransform>();
 
+    public GameObject ui;
+    public bool IsColse;
+
     void Start()
     {
         if (!mapRect) mapRect = GetComponent<RectTransform>();
@@ -30,10 +34,20 @@ public class MinimapController : MonoBehaviour
         // reset position ตอนเริ่ม
         playerIcon.anchoredPosition = Vector2.zero;
         player = FindFirstObjectByType<FirstPersonController>();
+        IsColse = true;
+        ui.SetActive(false);   // เริ่มต้นเป็นปิด minimap
     }
 
     void Update()
     {
+
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            IsColse = !IsColse;      // สลับ true/false
+            ui.SetActive(!IsColse);  // ถ้า IsColse = true → ปิด, false → เปิด
+        }
+
+
         if (!player || !playerIcon) return;
 
         // อัปเดตตำแหน่งผู้เล่น
@@ -63,6 +77,8 @@ public class MinimapController : MonoBehaviour
             // แปลงตำแหน่งโลก -> minimap แล้วใส่ให้ icon
             UpdateIconPosition(t.position, icon);
         }
+
+
     }
 
 

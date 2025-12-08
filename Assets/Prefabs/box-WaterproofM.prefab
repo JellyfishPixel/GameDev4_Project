@@ -209,6 +209,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   bubbleObject: {fileID: 1728392966829902260}
+  bubbleRenderer: {fileID: 6063434598721580234}
+  defaultTexture: {fileID: 0}
+  basicTexture: {fileID: 2800000, guid: 531b3a082726672488347e74e75f831f, type: 3}
+  strongTexture: {fileID: 2800000, guid: 05b7c0cdea8b6954995c68e86577907b, type: 3}
+  iceTexture: {fileID: 2800000, guid: fe48d3992da668e408fb2e43ce673f0f, type: 3}
   maxBubble: 3
   stepY: 0.01
   scaleDuration: 0.25
