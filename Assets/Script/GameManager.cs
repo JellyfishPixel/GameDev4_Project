@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using TMPro; 
+using TMPro;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -34,6 +35,7 @@ public class GameManager : MonoBehaviour
     public MinimapController minimap;
     public DestinationRegistry destinationRegistry;
 
+
     [System.Serializable]
     public class DeliveryRecord
     {
@@ -42,11 +44,12 @@ public class GameManager : MonoBehaviour
         public DeliveryItemData data;
         public int dayCreated;
 
-        // ==== ใหม่ สำหรับ minimap/destination ====
-        public string destinationId;   // มาจาก DeliveryItemData
-        public Transform worldTarget;  // จุดจริงในฉาก (หาได้จาก DestinationRegistry)
-        public bool minimapRegistered; // เคยส่งไปให้ minimap หรือยัง
+        // ==== สำหรับระบบปลายทาง / minimap ====
+        public string destinationId;      // เก็บแค่ ID ใช้ข้ามซีนได้
+        public Transform worldTarget;     // จุดใน "ซีนปัจจุบัน" เท่านั้น
+        public RectTransform minimapIcon; // icon ของกล่องนี้บนแมพใน "ซีนปัจจุบัน"
     }
+
 
     // กล่องที่อยู่ใน "รอบนี้" (สูงสุด 3)
     public List<DeliveryRecord> activeBoxes = new();
@@ -65,7 +68,7 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        // อัปเดต UI เวลา + sync วันไป EconomyManager (ถ้ามี)
+        minimap = FindFirstObjectByType<MinimapController>();
         UpdateClockUI();
         SyncDayToEconomy();
         SyncMoneyFromEconomy();
@@ -167,6 +170,21 @@ public class GameManager : MonoBehaviour
     }
 
     // ================== DELIVERY ==================
+    void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnDisable()
+    {
+        if (Instance == this)
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        RelinkSceneSystemsAndRebuildMinimap();
+    }
     DestinationRegistry GetDestinationRegistry()
     {
         if (destinationRegistry == null)
@@ -176,13 +194,104 @@ public class GameManager : MonoBehaviour
         return destinationRegistry;
     }
 
+    MinimapController GetMinimap()
+    {
+        if (minimap == null)
+            minimap = FindFirstObjectByType<MinimapController>();
+        return minimap;
+    }
+    Transform ResolveDestinationTransform(string destId)
+    {
+        if (string.IsNullOrWhiteSpace(destId))
+            return null;
+
+        string key = destId.Trim();
+
+        // หา registry ทุกตัวในซีนนี้
+        var regs = FindObjectsByType<DestinationRegistry>(FindObjectsSortMode.None);
+        if (regs == null || regs.Length == 0)
+        {
+            Debug.LogWarning("[GM] ResolveDestinationTransform: no DestinationRegistry in this scene");
+            return null;
+        }
+
+        foreach (var reg in regs)
+        {
+            if (reg == null) continue;
+
+            var t = reg.GetPoint(key);   // เราแก้ GetPoint ให้ trim/ignore-case แล้วนะ
+            if (t != null)
+            {
+                Debug.Log($"[GM] ResolveDestinationTransform: destId='{key}' -> {t.name} (registry={reg.gameObject.name})");
+                return t;
+            }
+        }
+
+        Debug.LogWarning($"[GM] ResolveDestinationTransform: not found destId='{key}' in any DestinationRegistry");
+        return null;
+    }
+    public void MarkDeliveredByDestination(string destinationId)
+    {
+        if (string.IsNullOrEmpty(destinationId)) return;
+
+        DeliveryRecord rec = null;
+        foreach (var r in activeBoxes)
+        {
+            if (r != null && r.destinationId == destinationId)
+            {
+                rec = r;
+                break;
+            }
+        }
+        if (rec == null) return;
+
+        // ไม่ต้องคำนวณเงินซ้ำ สมมติว่าคุณคิด reward ที่อื่นไปแล้ว
+        if (minimap != null && rec.minimapIcon != null)
+        {
+            minimap.UnregisterIcon(rec.minimapIcon);
+            rec.minimapIcon = null;
+        }
+
+        activeBoxes.Remove(rec);
+    }
+
+    void RelinkSceneSystemsAndRebuildMinimap()
+    {
+        var mini = minimap != null ? minimap : FindFirstObjectByType<MinimapController>();
+
+        foreach (var rec in activeBoxes)
+        {
+            if (rec == null || rec.data == null) continue;
+
+            rec.minimapIcon = null;
+
+            // ใช้ helper ตัวใหม่
+            rec.worldTarget = ResolveDestinationTransform(rec.destinationId);
+
+            Debug.Log($"[GM] Relink: destId='{rec.destinationId}' -> worldTarget={(rec.worldTarget ? rec.worldTarget.name : "NULL")}");
+
+            if (mini != null && rec.worldTarget != null)
+            {
+                rec.minimapIcon = mini.RegisterDeliveryTarget(rec.worldTarget);
+                Debug.Log($"[GM] Relink: rebuild icon => {(rec.minimapIcon ? rec.minimapIcon.name : "NULL")}");
+            }
+        }
+
+
+        minimap = mini;
+    }
+
     public void RegisterNewDelivery(BoxCore box, DeliveryItemInstance item)
     {
-        if (!box || !item || !item.data) return;
+        if (!box || !item || !item.data)
+        {
+            Debug.LogWarning("[GM] RegisterNewDelivery: box/item/data is null");
+            return;
+        }
 
         if (activeBoxes.Count >= maxActiveBoxes)
         {
-            Debug.LogWarning("[GameManager] Active boxes is full (3). ต้องไปจัดการ UI เอาออกก่อน");
+            Debug.LogWarning("[GM] Active boxes is full (3).");
             return;
         }
 
@@ -191,32 +300,30 @@ public class GameManager : MonoBehaviour
             box = box,
             itemInstance = item,
             data = item.data,
-            dayCreated = currentDay
+            dayCreated = currentDay,
+            destinationId = item.data.destinationId
         };
 
-        // ====== ใหม่: ผูกกับ destinationId & minimap ======
-        record.destinationId = item.data.destinationId;
+        Debug.Log($"[GM] NewDelivery item={record.data.itemName}, destId={record.destinationId}");
+        // หา worldTarget จากทุก DestinationRegistry ในซีน
+        record.worldTarget = ResolveDestinationTransform(record.destinationId);
+        Debug.Log($"[GM] RegisterNewDelivery worldTarget => {(record.worldTarget ? record.worldTarget.name : "NULL")}");
 
-        if (!string.IsNullOrEmpty(record.destinationId))
+
+        // ===== สร้าง icon บน minimap ถ้าทุกอย่างพร้อม =====
+        var mini = minimap != null ? minimap : FindFirstObjectByType<MinimapController>();
+        if (mini != null && record.worldTarget != null)
         {
-            var reg = GetDestinationRegistry();
-            if (reg != null)
-            {
-                record.worldTarget = reg.GetPoint(record.destinationId);
-                if (record.worldTarget != null && minimap != null)
-                {
-                    minimap.RegisterDeliveryTarget(record.worldTarget);
-                    record.minimapRegistered = true;
-                }
-            }
+            record.minimapIcon = mini.RegisterDeliveryTarget(record.worldTarget);
+            Debug.Log($"[GM]  RegisterDeliveryTarget => {(record.minimapIcon ? record.minimapIcon.name : "NULL")}");
         }
-        // ==================================================
+        else
+        {
+            Debug.LogWarning("[GM]  (RegisterNewDelivery) mini=null หรือ worldTarget=null → ยังไม่สร้าง icon แรก");
+        }
 
         activeBoxes.Add(record);
-
-        Debug.Log($"[GameManager] Register box: {record.data.itemName} day={currentDay}");
     }
-
 
     public void CompleteDelivery(BoxCore box)
     {
@@ -238,10 +345,7 @@ public class GameManager : MonoBehaviour
 
         if (rec.box != null)
         {
-            // ถ้าใช้ BoxKind.ColdBox ถือว่าเป็นกล่องเย็น
             usedColdBox = (rec.box.boxType == BoxKind.ColdBox);
-
-            // ตรงนี้ใช้ flag จาก BoxCore ที่เราเพิ่ม
             hasIceBubble = rec.box.hasIceBubble;
         }
 
@@ -252,24 +356,23 @@ public class GameManager : MonoBehaviour
             hasIceBubble
         );
 
-
         int dayCreated = rec.dayCreated;
         int dayDelivered = currentDay;
 
-        // ✅ ใช้ effectiveLimit ในการคิดดีเลย์จริง ๆ
         int reward = rec.itemInstance.CalculateReward(dayCreated, dayDelivered, effectiveLimit);
 
         AddMoney(reward);
-        activeBoxes.Remove(rec);
-        // ==== ใหม่: ลบจาก minimap ถ้าเคยลงทะเบียนไว้ ====
-        if (rec.minimapRegistered && minimap != null && rec.worldTarget != null)
-        {
-            minimap.UnregisterDeliveryTarget(rec.worldTarget);
-            rec.minimapRegistered = false;
-        }
-        // ===================================================
 
+        // ลบ icon ของกล่องนี้ออกจาก minimap (ซีนปัจจุบัน)
+        if (minimap != null && rec.minimapIcon != null)
+        {
+            minimap.UnregisterIcon(rec.minimapIcon);
+            rec.minimapIcon = null;
+        }
+
+        activeBoxes.Remove(rec);
     }
+
 
 
 }

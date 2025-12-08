@@ -67,13 +67,15 @@ public class BoxShopUI : MonoBehaviour
 
 
     public bool isOpen = false;
-    public GameObject interactui;
+    public interactUI interactui;
 
     void Start()
     {
         if (rootPanel != null)
             rootPanel.SetActive(false);
         isOpen = false;
+        interactui = FindFirstObjectByType<interactUI>();
+        
     }
     int CalculateCurrentTotalCost()
     {
@@ -100,7 +102,7 @@ public class BoxShopUI : MonoBehaviour
         // ถ้าร้านเปิดอยู่แล้ว ไม่ต้องทำอะไร (กัน ResetSelections ซ้ำ)
         if (isOpen) return;
         isOpen = true;
-        interactui.SetActive(false);
+        interactui.gameObject.SetActive(false);
         currentTerminal = terminal;
         currentPlayer = player;
 
@@ -123,7 +125,7 @@ public class BoxShopUI : MonoBehaviour
     {
         if (!isOpen) return;    // ปิดซ้ำก็ไม่ทำอะไร
         isOpen = false;
-        interactui.SetActive(true);
+        interactui.gameObject.SetActive(true);
         if (rootPanel != null)
             rootPanel.SetActive(false);
 

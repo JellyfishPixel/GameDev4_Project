@@ -35,6 +35,7 @@ public class DeliveryPoint : MonoBehaviour, IInteractable
   
             if (GameManager.Instance != null)
             {
+                GameManager.Instance.MarkDeliveredByDestination(destinationId);
                 GameManager.Instance.AddMoney(reward);
                 AddSalesPopupUI.ShowNotice(reward);
             }

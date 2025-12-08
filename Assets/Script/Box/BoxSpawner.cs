@@ -31,6 +31,7 @@ public class BoxSpawner : MonoBehaviour, IInteractable
         if (!eco.TryConsumeBox(sizeForThisSpawner))
         {
             Debug.Log("[BoxSpawner] ไม่มีกล่องขนาดนี้ในสต็อก");
+            AddSalesPopupUI.ShowMessage("No box left.\nPlease buy more at the shop.");
             return;
         }
 

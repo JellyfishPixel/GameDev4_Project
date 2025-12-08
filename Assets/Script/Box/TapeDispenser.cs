@@ -24,9 +24,16 @@ public class TapeDispenser : MonoBehaviour, IInteractable
             Debug.LogWarning("[TapeDispenser] ไม่พบ TapeDragScaler");
             return;
         }
-
-        tape.SelectDispenser(this);
-        Debug.Log($"[TapeDispenser] Selected: {name}");
+        
+        if(BoxCore.Current.LidsClosed == true)
+        {
+            tape.SelectDispenser(this);
+            Debug.Log($"[TapeDispenser] Selected: {name}");
+        }
+        else
+        {
+            AddSalesPopupUI.ShowMessage("Close lids before drag tape");
+        }
     }
 
     public Material GetMaterial()
