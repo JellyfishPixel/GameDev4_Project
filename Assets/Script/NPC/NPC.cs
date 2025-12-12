@@ -86,6 +86,12 @@ public class NPC : MonoBehaviour, IInteractable
                 UpdateEntering();
                 break;
             case State.Waiting:
+                // ถ้าของ/กล่องที่ NPC spawn หายไป (ถูก Destroy) → ให้ออก
+                if (hasSpawnedPackage && spawnedPackageRef == null)
+                {
+                    state = State.Exiting;
+                    itemDialogueManager?.Close();
+                }
                 break;
             case State.Exiting:
                 UpdateExiting();

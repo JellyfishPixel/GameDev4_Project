@@ -84,10 +84,10 @@ public class EconomyManager : MonoBehaviour
 
     // 1 ชิ้นจากร้าน = กดได้กี่ครั้ง
     public const int BUBBLE_USES_PER_PURCHASE = 3;
-
-
-
     public const int TAPE_USES_PER_ROLL = 10;
+
+    [Header("TEST MODE")]
+    public bool testSessionNoPrefs = true;  // ✅ เปิดไว้ตอนเทส
 
     void Awake()
     {
@@ -100,17 +100,34 @@ public class EconomyManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
-        if (loadFromSaveOnStart)
-        {
+        if (!testSessionNoPrefs)
             LoadFromPrefs();
-        }
+
         UpdateMoneyUI();
     }
 
 
     void OnApplicationQuit()
     {
-        SaveToPrefs();
+        if (!testSessionNoPrefs)
+            SaveToPrefs();
+    }
+
+    void OnApplicationPause(bool pause)
+    {
+        if (!testSessionNoPrefs && pause)
+            SaveToPrefs();
+    }
+
+    void OnApplicationFocus(bool focus)
+    {
+        if (!testSessionNoPrefs && !focus)
+            SaveToPrefs();
+    }
+    void SaveIfAllowed()
+    {
+        if (!testSessionNoPrefs)
+            SaveToPrefs();
     }
 
     // ========== API เงิน ==========
@@ -158,7 +175,7 @@ public class EconomyManager : MonoBehaviour
             if (cashToday < 0) cashToday = 0; // กันพลาด
         }
 
-        SaveToPrefs();
+        SaveIfAllowed();
         UpdateMoneyUI();   // ✅
         Debug.Log($"[Eco] Spend {price} => cashToday={cashToday}, bank={bankBalance}");
 
@@ -175,7 +192,7 @@ public class EconomyManager : MonoBehaviour
         cashToday = 0;
         currentDay++;
 
-        SaveToPrefs();
+        SaveIfAllowed();
         UpdateMoneyUI();   // ✅
         Debug.Log($"[Eco] EndDay => Day={currentDay}, bank={bankBalance}, cashToday={cashToday}");
 
@@ -207,6 +224,19 @@ public class EconomyManager : MonoBehaviour
             _ => false
         };
     }
+    public int GetBoxStock(BoxSizeSimple size)
+    {
+        return size switch
+        {
+            BoxSizeSimple.Small => boxStockS,
+            BoxSizeSimple.Medium => boxStockM,
+            BoxSizeSimple.Large => boxStockL,
+            BoxSizeSimple.ColdBox => boxStockCold,
+            BoxSizeSimple.WaterMedium => boxStockWaterM,
+            BoxSizeSimple.WaterLarge => boxStockWaterL,
+            _ => 0
+        };
+    }
 
     public bool TryConsumeBox(BoxSizeSimple size)
     {
@@ -222,7 +252,7 @@ public class EconomyManager : MonoBehaviour
             case BoxSizeSimple.WaterLarge: boxStockWaterL--; break;
         }
 
-        SaveToPrefs();
+        SaveIfAllowed();
         return true;
     }
 
@@ -240,8 +270,9 @@ public class EconomyManager : MonoBehaviour
             case BoxSizeSimple.WaterLarge: boxStockWaterL += amount; break;
         }
 
-        SaveToPrefs();
+        SaveIfAllowed();
         UpdateMoneyUI();
+
     }
 
 
@@ -289,7 +320,7 @@ public class EconomyManager : MonoBehaviour
         int current = GetTapeUses(color);
         SetTapeUses(color, current + addUses);
 
-        SaveToPrefs();
+        SaveIfAllowed();
         UpdateMoneyUI();
     }
 
@@ -303,7 +334,7 @@ public class EconomyManager : MonoBehaviour
 
         SetTapeUses(color, current - 1);
 
-        SaveToPrefs();
+        SaveIfAllowed();
         // ไม่จำเป็นต้อง UpdateMoneyUI เพราะเงินไม่เกี่ยว แต่จะเรียกก็ได้
         return true;
     }
@@ -340,7 +371,7 @@ public class EconomyManager : MonoBehaviour
         int current = GetBubbleUses(type);
 
         SetBubbleUses(type, current + addUses);
-        SaveToPrefs();
+        SaveIfAllowed();
     }
 
     /// <summary>เช็คว่ายังเหลือ uses ไหม</summary>
@@ -356,7 +387,7 @@ public class EconomyManager : MonoBehaviour
         if (current <= 0) return false;
 
         SetBubbleUses(type, current - 1);
-        SaveToPrefs();
+        SaveIfAllowed();
         return true;
     }
 

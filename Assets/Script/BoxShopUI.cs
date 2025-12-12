@@ -6,6 +6,21 @@ public class BoxShopUI : MonoBehaviour
 {
     [Header("Root Panel")]
     public GameObject rootPanel;      // Panel หลักของร้าน
+    [Header("Name Labels (show owned stock)")]
+    public TMP_Text nameS;
+    public TMP_Text nameM;
+    public TMP_Text nameL;
+    public TMP_Text nameC;
+    public TMP_Text nameWaterM;
+    public TMP_Text nameWaterL;
+
+    public TMP_Text nameBubbleBasic;
+    public TMP_Text nameBubbleStrong;
+    public TMP_Text nameBubbleIce;
+
+    public TMP_Text nameTapeRed;
+    public TMP_Text nameTapeBlue;
+    public TMP_Text nameTapeGreen;
 
     [Header("Price / unit")]
     public int priceS = 10;
@@ -169,8 +184,28 @@ public class BoxShopUI : MonoBehaviour
         if (qtyTapeRedText) qtyTapeRedText.text = qtyTapeRed.ToString();
         if (qtyTapeBlueText) qtyTapeBlueText.text = qtyTapeBlue.ToString();
         if (qtyTapeGreenText) qtyTapeGreenText.text = qtyTapeGreen.ToString();
-
         var eco = EconomyManager.Instance;
+
+        if (eco != null)
+        {
+            // ===== Boxes =====
+            if (nameS) nameS.text = WithStock("Small Box", eco.boxStockS);
+            if (nameM) nameM.text = WithStock("Medium Box", eco.boxStockM);
+            if (nameL) nameL.text = WithStock("Large Box", eco.boxStockL);
+            if (nameC) nameC.text = WithStock("Cold Box", eco.boxStockCold);
+            if (nameWaterM) nameWaterM.text = WithStock("Waterproof M", eco.boxStockWaterM);
+            if (nameWaterL) nameWaterL.text = WithStock("Waterproof L", eco.boxStockWaterL);
+
+            // ===== Bubble (ถ้าสต๊อกจริงของเธอใช้เป็น uses ให้โชว์ uses) =====
+            if (nameBubbleBasic) nameBubbleBasic.text = WithStock("Bubble Basic", eco.bubbleUsesBasic);
+            if (nameBubbleStrong) nameBubbleStrong.text = WithStock("Bubble Strong", eco.bubbleUsesStrong);
+            if (nameBubbleIce) nameBubbleIce.text = WithStock("Bubble Ice", eco.bubbleUsesIce);
+
+            // ===== Tape (เทปของเธอเก็บเป็น uses) =====
+            if (nameTapeRed) nameTapeRed.text = WithStock("Tape Red", eco.tapeUsesRed);
+            if (nameTapeBlue) nameTapeBlue.text = WithStock("Tape Blue", eco.tapeUsesBlue);
+            if (nameTapeGreen) nameTapeGreen.text = WithStock("Tape Green", eco.tapeUsesGreen);
+        }
         if (eco && cashText)
             cashText.text = $"CASH : {eco.TotalFunds}$";
 
@@ -210,6 +245,11 @@ public class BoxShopUI : MonoBehaviour
     public void AddTapeBlue(int delta) { qtyTapeBlue = Mathf.Max(0, qtyTapeBlue + delta); RefreshUI(); }
     public void AddTapeGreen(int delta) { qtyTapeGreen = Mathf.Max(0, qtyTapeGreen + delta); RefreshUI(); }
 
+
+    string WithStock(string baseName, int stock)
+    {
+        return $"{baseName} (x{Mathf.Max(0, stock)})";
+    }
 
     public void OnClickBuy()
     {

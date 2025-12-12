@@ -362,6 +362,11 @@ public class GameManager : MonoBehaviour
         int reward = rec.itemInstance.CalculateReward(dayCreated, dayDelivered, effectiveLimit);
 
         AddMoney(reward);
+        if (rec.box != null && rec.box.ownerNPC != null)
+        {
+            rec.box.ownerNPC.HandleBoxStored();
+        }
+        box.MarkDelivered();
 
         // ลบ icon ของกล่องนี้ออกจาก minimap (ซีนปัจจุบัน)
         if (minimap != null && rec.minimapIcon != null)

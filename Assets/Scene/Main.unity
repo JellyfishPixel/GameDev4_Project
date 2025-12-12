@@ -1615,7 +1615,7 @@ GameObject:
   - component: {fileID: 152345737}
   - component: {fileID: 152345736}
   m_Layer: 5
-  m_Name: Slot10
+  m_Name: Slot10_BubleIce
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1953,7 +1953,7 @@ GameObject:
   - component: {fileID: 167075662}
   - component: {fileID: 167075661}
   m_Layer: 5
-  m_Name: Slot1
+  m_Name: Slot1_boxS
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2341,8 +2341,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 30
+  m_fontSizeBase: 30
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -2379,7 +2379,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_margin: {x: 0, y: 0, z: -103.361946, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -3878,7 +3878,7 @@ GameObject:
   - component: {fileID: 382599919}
   - component: {fileID: 382599918}
   m_Layer: 5
-  m_Name: Slot9
+  m_Name: Slot9_BublePremiem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5066,7 +5066,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: -103.58081, w: 0}
+  m_margin: {x: 0, y: 0, z: -103.58081, w: -71.459984}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -5301,8 +5301,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 30
+  m_fontSizeBase: 30
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -5339,7 +5339,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_margin: {x: 0, y: 0, z: -102.0858, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -5550,7 +5550,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: -112.78198, w: 0}
+  m_margin: {x: 0, y: 0, z: -112.78198, w: -68.90784}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -7006,8 +7006,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 30
+  m_fontSizeBase: 30
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -7044,7 +7044,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: -55.29669, w: 0}
+  m_margin: {x: 0, y: 0, z: -105.06354, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -9213,8 +9213,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -48.1, y: 51.1}
-  m_SizeDelta: {x: 40.464, y: 50}
+  m_AnchoredPosition: {x: -40, y: 51.1}
+  m_SizeDelta: {x: 66.23, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &809831094
 MonoBehaviour:
@@ -9236,7 +9236,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: BubbleBasic
+  m_text: 'Bubble
+
+    Basic'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -9263,8 +9265,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 30
+  m_fontSizeBase: 30
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -9301,7 +9303,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: -78.87085, w: 0}
+  m_margin: {x: 0, y: 0, z: -78.87085, w: -67.631836}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -9625,8 +9627,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 30
+  m_fontSizeBase: 30
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -9663,7 +9665,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_margin: {x: 0, y: 0, z: -98.25759, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -10104,7 +10106,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Tape.Blue
+  m_text: TapeBlue
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -10131,8 +10133,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 30
+  m_fontSizeBase: 30
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -10169,7 +10171,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: -69.065796, w: 0}
+  m_margin: {x: 0, y: 0, z: -100.96758, w: -62.52751}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -11274,7 +11276,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -48.1, y: 51.1}
+  m_AnchoredPosition: {x: -54, y: 51.1}
   m_SizeDelta: {x: 40.464, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1029216238
@@ -11297,7 +11299,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Tape.Green
+  m_text: TapeGreen
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -11324,8 +11326,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 30
+  m_fontSizeBase: 30
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -11362,7 +11364,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: -69.065796, w: 0}
+  m_margin: {x: 0, y: 0, z: -112.452194, w: -62.52751}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -11917,7 +11919,7 @@ GameObject:
   - component: {fileID: 1054464509}
   - component: {fileID: 1054464508}
   m_Layer: 5
-  m_Name: Slot11
+  m_Name: Slot11_BoxWaterM
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11996,7 +11998,7 @@ GameObject:
   - component: {fileID: 1054788238}
   - component: {fileID: 1054788237}
   m_Layer: 5
-  m_Name: Slot5
+  m_Name: Slot5_TapeRed
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -12682,7 +12684,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Tape.Red
+  m_text: TapeRed
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -12709,8 +12711,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 30
+  m_fontSizeBase: 30
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -12747,7 +12749,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: -55.29669, w: 0}
+  m_margin: {x: 0, y: 0, z: -101.23515, w: -63.803604}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -12773,7 +12775,7 @@ GameObject:
   - component: {fileID: 1118166846}
   - component: {fileID: 1118166845}
   m_Layer: 5
-  m_Name: Slot3
+  m_Name: Slot3_boxL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -13360,8 +13362,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 30
+  m_fontSizeBase: 30
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -13398,7 +13400,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: -110.73718, w: 0}
+  m_margin: {x: 0, y: 0, z: -110.73718, w: -72.736115}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -14585,8 +14587,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 30
+  m_fontSizeBase: 30
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -14623,7 +14625,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: -110.73718, w: 0}
+  m_margin: {x: 0, y: 0, z: -110.73718, w: -62.527542}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -15901,7 +15903,7 @@ GameObject:
   - component: {fileID: 1453132402}
   - component: {fileID: 1453132401}
   m_Layer: 5
-  m_Name: Slot8
+  m_Name: Slot8_BubleBasic
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -16532,7 +16534,7 @@ GameObject:
   - component: {fileID: 1565495509}
   - component: {fileID: 1565495508}
   m_Layer: 5
-  m_Name: Slot2
+  m_Name: Slot2_boxM
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -17483,7 +17485,7 @@ GameObject:
   - component: {fileID: 1683722202}
   - component: {fileID: 1683722201}
   m_Layer: 5
-  m_Name: Slot4
+  m_Name: Slot4_boxCool
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -17562,7 +17564,7 @@ GameObject:
   - component: {fileID: 1686554268}
   - component: {fileID: 1686554267}
   m_Layer: 5
-  m_Name: Slot12
+  m_Name: Slot12_BoxWaterL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -17641,7 +17643,7 @@ GameObject:
   - component: {fileID: 1686758349}
   - component: {fileID: 1686758348}
   m_Layer: 5
-  m_Name: Slot6
+  m_Name: Slot6_TapeGreen
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -18175,6 +18177,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BoxShopUI
   rootPanel: {fileID: 982816423}
+  nameS: {fileID: 183618623}
+  nameM: {fileID: 849199185}
+  nameL: {fileID: 491094898}
+  nameC: {fileID: 638562177}
+  nameWaterM: {fileID: 477388748}
+  nameWaterL: {fileID: 500038716}
+  nameBubbleBasic: {fileID: 809831094}
+  nameBubbleStrong: {fileID: 1191622156}
+  nameBubbleIce: {fileID: 1284533412}
+  nameTapeRed: {fileID: 1111522540}
+  nameTapeBlue: {fileID: 931098033}
+  nameTapeGreen: {fileID: 1029216238}
   priceS: 10
   priceM: 15
   priceL: 20
@@ -19359,6 +19373,7 @@ MonoBehaviour:
   bubbleUsesBasic: 0
   bubbleUsesStrong: 0
   bubbleUsesIce: 0
+  testSessionNoPrefs: 1
 --- !u!114 &1840589216
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20512,7 +20527,7 @@ GameObject:
   - component: {fileID: 1986155335}
   - component: {fileID: 1986155334}
   m_Layer: 5
-  m_Name: Slot7
+  m_Name: Slot7_TapeBlue
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

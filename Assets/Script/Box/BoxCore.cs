@@ -88,6 +88,15 @@ public class BoxCore : MonoBehaviour
     public DeliveryItemData CurrentItemData => currentItemData;
     public DeliveryItemInstance CurrentItemInstance => currentItemInstance;
 
+    [Header("Delivery Runtime")]
+    public bool deliveredSuccessfully = false;
+
+    public void MarkDelivered()
+    {
+        deliveredSuccessfully = true;
+    }
+
+
     void Reset()
     {
         itemArea = GetComponent<Collider>();
@@ -108,11 +117,7 @@ public class BoxCore : MonoBehaviour
         UpdateBoxTag();
     }
 
-    void OnDestroy()
-    {
-        if (Current == this)
-            Current = null;
-    }
+
 
     public void SetAsCurrent()
     {
@@ -134,6 +139,30 @@ public class BoxCore : MonoBehaviour
                 step = BoxStep.Closed;
         }
     }
+    void OnDestroy()
+    {
+        // ถ้าเป็นการ Destroy เพราะ "ทิ้งของ" (ยังไม่ได้ส่งสำเร็จ)
+        if (!deliveredSuccessfully)
+        {
+            // ค่าของลูกค้า: ใช้ baseReward เป็นค่าปรับ
+            int penalty = 0;
+            if (currentItemData != null)
+                penalty = Mathf.Max(0, currentItemData.baseReward);
+
+            if (penalty > 0 && GameManager.Instance != null)
+            {
+                GameManager.Instance.AddMoney(-penalty); // หักเงิน
+            }
+
+            // ให้ลูกค้าออก (ที่คุยกันก่อนหน้า)
+            if (ownerNPC != null)
+                ownerNPC.ForceExitAndClearItem();
+        }
+
+        if (Current == this)
+            Current = null;
+    }
+
 
     void OnCollisionEnter(Collision collision)
     {
