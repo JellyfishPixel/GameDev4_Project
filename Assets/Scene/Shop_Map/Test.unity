@@ -822,6 +822,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: stuff1
       objectReference: {fileID: 0}
+    - target: {fileID: 7337231265566958177, guid: 96641648e227aba438f41b563fbb8923, type: 3}
+      propertyPath: m_IsKinematic
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4757,7 +4761,7 @@ Transform:
   m_GameObject: {fileID: 411357753}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 1.013}
+  m_LocalPosition: {x: 0, y: 0, z: 1.167}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8180,11 +8184,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 752591986}
-  - component: {fileID: 752591985}
   - component: {fileID: 752591984}
   - component: {fileID: 752591983}
-  m_Layer: 0
-  m_Name: Plane
+  m_Layer: 7
+  m_Name: Plane cheke damage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8260,14 +8263,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &752591985
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 752591982}
-  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!4 &752591986
 Transform:
   m_ObjectHideFlags: 0
@@ -8277,7 +8272,7 @@ Transform:
   m_GameObject: {fileID: 752591982}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.82567, y: 0.96, z: -1.90989}
+  m_LocalPosition: {x: -0.82567, y: 0.553, z: -1.90989}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -15263,7 +15258,7 @@ Transform:
   m_GameObject: {fileID: 1416627057}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.439, z: 0}
+  m_LocalPosition: {x: 0, y: -0.439, z: 0.222}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -15501,7 +15496,7 @@ MonoBehaviour:
         clearFlags: 0
         passFoldout: 0
         m_Version: 0
-        filterFoldout: 0
+        filterFoldout: 1
         rendererFoldout: 1
         renderQueueType: 10
         layerMask:
@@ -17440,9 +17435,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInteractionSystem
   playerCamera: {fileID: 1416627061}
   interactKey: 323
-  interactDistance: 3
+  interactDistance: 10
   pickupKey: 323
-  pickupDistance: 3
+  pickupDistance: 10
   pickableTag: pickable
   holdPoint: {fileID: 411357754}
   holdLayerName: holdLayer
