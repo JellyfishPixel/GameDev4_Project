@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 using StarterAssets;
-using Unity.Cinemachine;
+using UnityEngine.InputSystem;
+
 
 public class SceneTransitionManager : MonoBehaviour
 {
@@ -19,22 +20,20 @@ public class SceneTransitionManager : MonoBehaviour
     [Header("Cameras")]
     public Camera firstPersonCamera;
     public Camera thirdPersonCamera;
+    public Transform firstPersonCameraRoot;
 
 
     [Header("Starter Assets Controllers")]
     public FirstPersonController firstPersonController;
     public ThirdPersonController thirdPersonController;
-    [Header("FP Camera Reset")]
-    public Transform fpCameraRoot;      // ตัวที่ถือกล้อง FP
-    public Transform fpCameraTarget;    // CameraTarget ของ FirstPersonController
-
-    [Header("Interaction")]
-    public PlayerInteractionSystem interactionSystem;
-
+    [SerializeField] private StarterAssetsInputs starterInput;
 
     // ===== Warp =====
     private string pendingSpawnId;
     private bool hasPendingSpawn;
+
+    [Header("Interaction")]
+    public PlayerInteractionSystem interactionSystem;
 
     void Awake()
     {
@@ -43,8 +42,8 @@ public class SceneTransitionManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-        if (!interactionSystem && player)
-            interactionSystem = player.GetComponent<PlayerInteractionSystem>();
+        starterInput = player.GetComponent<StarterAssetsInputs>();
+
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
@@ -108,7 +107,7 @@ public class SceneTransitionManager : MonoBehaviour
 
         if (thirdPersonController != null)
             thirdPersonController.enabled = false;
-
+        ResetStarterInput();
         // ===== 2. สลับกล้อง =====
         if (firstPersonCamera != null)
             firstPersonCamera.gameObject.SetActive(isMain);
@@ -128,15 +127,40 @@ public class SceneTransitionManager : MonoBehaviour
         // ===== 3. ตัวละคร =====
         if (characterVisual != null)
             characterVisual.SetActive(!isMain); // FP = ปิด, TP = เปิด
-
-        // ===== 4. เปิด Script ที่ต้องใช้ =====
         if (isMain)
         {
-            ResetFirstPersonCamera();
-
-            if (firstPersonController != null)
-                firstPersonController.enabled = true;
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
         }
+        else
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+
+        if (isMain && firstPersonController != null)
+        {
+            // 1. ปิด controller ก่อน
+            firstPersonController.enabled = false;
+
+            // 🔥 สลับ Action Map (จุดสำคัญ)
+
+            // 2. รีเซ็ต Player
+            player.transform.rotation =
+                Quaternion.Euler(0, player.transform.eulerAngles.y, 0);
+
+            // 3. 🔥 reset CameraRoot แบบ hard
+            HardResetFirstPersonCameraRoot();
+
+            // 4. รีเซ็ต CharacterController (สำคัญ)
+            var cc = player.GetComponent<CharacterController>();
+            if (cc != null)
+                cc.center = new Vector3(0, cc.height / 2f, 0);
+
+            // 5. เปิด controller ทีหลัง
+            firstPersonController.enabled = true;
+        }
+
 
         else
         {
@@ -148,20 +172,33 @@ public class SceneTransitionManager : MonoBehaviour
             ? "[SceneTransition] FIRST PERSON MODE"
             : "[SceneTransition] THIRD PERSON MODE");
     }
-    void ResetFirstPersonCamera()
+
+    void LateUpdate()
     {
-        if (fpCameraTarget)
-        {
-            fpCameraTarget.localRotation = Quaternion.identity;
-        }
+        if (!firstPersonCameraRoot) return;
 
-        if (fpCameraRoot)
-        {
-            fpCameraRoot.localPosition = new Vector3(0,1,0);
-            fpCameraRoot.localRotation = Quaternion.identity;
-        }
+        firstPersonCameraRoot.localPosition = new Vector3(0, 1.2f, 0);
     }
+    void HardResetFirstPersonCameraRoot()
+    {
+        if (!firstPersonCameraRoot || !player) return;
 
+        // 🔥 บังคับ parent ใหม่ (สำคัญมาก)
+        firstPersonCameraRoot.SetParent(player.transform, false);
 
+        // 🔥 reset local space
+        firstPersonCameraRoot.localPosition = new Vector3(0, 1.2f, 0);
+        firstPersonCameraRoot.localRotation = Quaternion.identity;
+        firstPersonCameraRoot.localScale = Vector3.one;
+    }
+    void ResetStarterInput()
+    {
+        if (!starterInput) return;
+
+        starterInput.move = Vector2.zero;
+        starterInput.look = Vector2.zero;
+        starterInput.jump = false;
+        starterInput.sprint = false;
+    }
 
 }

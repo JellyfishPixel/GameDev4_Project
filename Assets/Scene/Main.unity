@@ -19353,10 +19353,10 @@ MonoBehaviour:
   characterVisual: {fileID: 2043902701}
   firstPersonCamera: {fileID: 1725046386}
   thirdPersonCamera: {fileID: 19881417}
+  firstPersonCameraRoot: {fileID: 1186467925}
   firstPersonController: {fileID: 1840589224}
   thirdPersonController: {fileID: 1840589230}
-  fpCameraRoot: {fileID: 1186467925}
-  fpCameraTarget: {fileID: 1725046382}
+  starterInput: {fileID: 0}
   interactionSystem: {fileID: 1840589194}
 --- !u!1 &1829928414
 GameObject:
