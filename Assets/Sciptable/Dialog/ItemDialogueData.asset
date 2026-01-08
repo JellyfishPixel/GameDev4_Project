@@ -13,16 +13,15 @@ MonoBehaviour:
   m_Name: ItemDialogueData
   m_EditorClassIdentifier: Assembly-CSharp::ItemDialogueData
   steps:
-  - speaker: You
-    text: Send to no one has ever looked so good being dragged across the floor by
-      an invisible arm
+  - speaker: Customer
+    text: I need this package delivered safely.
     voice: {fileID: 0}
     gotoIndex: 1
     onLineEndAction: 0
     moneyAmount: 0
     onLineEndDelay: 0
     options: []
-  - speaker: Me
+  - speaker: Player
     text: 
     voice: {fileID: 0}
     gotoIndex: 0
@@ -30,31 +29,23 @@ MonoBehaviour:
     moneyAmount: 0
     onLineEndDelay: 0
     options:
-    - text: yes
+    - text: ">Let me see\u2026"
       gotoIndex: 2
-    - text: no
+    - text: '>No'
       gotoIndex: 3
-  - speaker: Me
-    text: Ok
+  - speaker: Customer
+    text: "I\u2019ll be waiting for your return."
     voice: {fileID: 0}
-    gotoIndex: 4
+    gotoIndex: -1
     onLineEndAction: 1
     moneyAmount: 0
     onLineEndDelay: 0
     options: []
-  - speaker: You
-    text: Ok
+  - speaker: Customer
+    text: 
     voice: {fileID: 0}
     gotoIndex: -1
     onLineEndAction: 2
-    moneyAmount: 0
-    onLineEndDelay: 0
-    options: []
-  - speaker: You
-    text: Ok
-    voice: {fileID: 0}
-    gotoIndex: -1
-    onLineEndAction: 0
     moneyAmount: 0
     onLineEndDelay: 0
     options: []

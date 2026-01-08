@@ -16,6 +16,8 @@ public class ItemDialogueManager : MonoBehaviour
     public TMP_Text bodyText;
     public Button[] optionButtons;
     public TMP_Text[] optionLabels;
+    FirstPersonController fpc;
+
 
     [Header("Typing")]
     public bool enableTyping = true;
@@ -46,6 +48,7 @@ public class ItemDialogueManager : MonoBehaviour
     ItemDialogueData.ChoiceOption[] currentChoices;
 
 
+
     // ================== UNITY ==================
 
     void Awake()
@@ -62,6 +65,7 @@ public class ItemDialogueManager : MonoBehaviour
     void Start()
     {
         movementLocker = FindFirstObjectByType<PlayerMovementLocker>();
+        fpc = FindFirstObjectByType<FirstPersonController>();
 
     }
 
@@ -84,7 +88,7 @@ public class ItemDialogueManager : MonoBehaviour
                     (currentChoiceIndex + 1) % currentChoices.Length;
                 UpdateChoiceHighlight();
             }
-            else if (Input.GetKeyDown(KeyCode.Space))
+            else if (Input.GetKeyDown(KeyCode.Tab))
             {
                 // ยืนยัน choice
                 var chosen = currentChoices[currentChoiceIndex];
@@ -97,7 +101,7 @@ public class ItemDialogueManager : MonoBehaviour
         }
 
         // ===== ไม่มี choice =====
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Tab))
         {
             SkipTypingOrNext();
         }
@@ -129,7 +133,7 @@ public class ItemDialogueManager : MonoBehaviour
         if (movementLocker != null)
             movementLocker.Lock();
 
-
+  
 
         isShowing = true;
         ShowCurrentStep();
@@ -205,17 +209,22 @@ public class ItemDialogueManager : MonoBehaviour
     }
     void UpdateChoiceHighlight()
     {
-        for (int i = 0; i < optionButtons.Length; i++)
+        for (int i = 0; i < optionLabels.Length; i++)
         {
-            if (!optionButtons[i]) continue;
+            if (!optionLabels[i]) continue;
 
             bool selected = (i == currentChoiceIndex);
-            optionButtons[i].interactable = selected;
 
-            // ถ้าอยากให้ชัดขึ้น แนะนำเปลี่ยนสี
-            var colors = optionButtons[i].colors;
-            colors.normalColor = selected ? Color.yellow : Color.white;
-            optionButtons[i].colors = colors;
+            // สี
+            optionLabels[i].color = selected
+                ? Color.white
+                : Color.whiteSmoke;
+
+
+            // (เสริม) ขนาดนิดหน่อย
+            optionLabels[i].fontSize = selected
+                ? 24
+                : 26;
         }
     }
 
@@ -321,7 +330,6 @@ public class ItemDialogueManager : MonoBehaviour
     }
 
     // ================== CLOSE ==================
-
     public void Close()
     {
         if (panel) panel.SetActive(false);
@@ -330,9 +338,7 @@ public class ItemDialogueManager : MonoBehaviour
         isShowing = false;
         isTyping = false;
 
-        if (movementLocker != null)
-            movementLocker.Unlock();
-
+        StartCoroutine(ReleaseDialogueAndResetJump());
 
         if (currentActorId != 0)
             talkedActorIds.Add(currentActorId);
@@ -342,7 +348,25 @@ public class ItemDialogueManager : MonoBehaviour
         onFinished?.Invoke();
     }
 
-    // ================== CURSOR ==================
+    IEnumerator ReleaseDialogueAndResetJump()
+    {
+        // 1. รอให้ปล่อย Space
+        while (Input.GetKey(KeyCode.Space))
+            yield return null;
+
+        // 2. รีเซ็ต Jump buffer ของ StarterAssets
+        if (fpc != null)
+        {
+            fpc.enabled = false;
+            yield return null; // 1 frame ให้ state reset
+            fpc.enabled = true;
+        }
+
+        // 3. ค่อยปลด movement
+        movementLocker?.Unlock();
+    }
+
+
 
 
 }

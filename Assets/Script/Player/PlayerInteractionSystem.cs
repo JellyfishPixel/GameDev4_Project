@@ -149,7 +149,6 @@ public class PlayerInteractionSystem : MonoBehaviour
         if (ItemDialogueManager.Instance != null &&
             ItemDialogueManager.Instance.IsShowing)
         {
-            ItemDialogueManager.Instance.SkipTypingOrNext();
             return;
         }
 
