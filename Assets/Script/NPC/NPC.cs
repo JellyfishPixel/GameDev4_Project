@@ -61,14 +61,9 @@ public class NPC : MonoBehaviour, IInteractable
         }
     }
 
-    public void Interact(PlayerInteractionSystem interactor,
-                         PlayerInteractionSystem.InteractionType type)
+    public void Interact(PlayerInteractionSystem player)
     {
-        // E เท่านั้น
-        if (type != PlayerInteractionSystem.InteractionType.Secondary)
-            return;
-
-        TryTalk(interactor);
+        TryTalk(player);
     }
 
 

@@ -42,7 +42,6 @@ public class GameManager : MonoBehaviour
         public BoxCore box;
         public DeliveryItemInstance itemInstance;
         public DeliveryItemData data;
-
         public int dayCreated;
 
         // ==== สำหรับระบบปลายทาง / minimap ====

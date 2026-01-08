@@ -46,12 +46,8 @@ public class BoxBubble : MonoBehaviour, IInteractable
 
 
     // เผื่อยังอยากให้กดที่ Bubble ตรง ๆ ก็ยังใช้ได้
-    public void Interact(PlayerInteractionSystem interactor,
-                         PlayerInteractionSystem.InteractionType type)
+    public void Interact(PlayerInteractionSystem interactor)
     {
-        // Mouse0 เท่านั้น
-        if (type != PlayerInteractionSystem.InteractionType.Primary)
-            return;
         AddBubble();
     }
 

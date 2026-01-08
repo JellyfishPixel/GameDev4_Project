@@ -58,7 +58,7 @@ public class EconomyManager : MonoBehaviour
 
 
 
-    [SerializeField] bool loadFromSaveOnStart = false;
+    [SerializeField] bool loadFromSaveOnStart = false;   // เปิดใน Inspector ได้
     [Header("Tape Stock (uses)")]
     [Tooltip("จำนวนครั้งที่ยังใช้ได้ของเทปสีแดง (1 ม้วน = 10 ครั้ง)")]
     public int tapeUsesRed = 0;

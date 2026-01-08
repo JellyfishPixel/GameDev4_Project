@@ -12,12 +12,8 @@ public class CustomerDialogueInteract : MonoBehaviour, IInteractable
     [Tooltip("index ของช้อยส์ที่ถือว่าเป็น Decline")]
     public int declineIndex = 1;
 
-    public void Interact(PlayerInteractionSystem interactor,
-                         PlayerInteractionSystem.InteractionType type)
+    public void Interact(PlayerInteractionSystem player)
     {
-        // E เท่านั้น
-        if (type != PlayerInteractionSystem.InteractionType.Secondary)
-            return;
         if (!ItemDialogueManager.Instance || !itemData || !itemData.dialogueData)
         {
             Debug.LogWarning("[CustomerDialogueInteract] Missing itemData/dialogueData/manager.");
