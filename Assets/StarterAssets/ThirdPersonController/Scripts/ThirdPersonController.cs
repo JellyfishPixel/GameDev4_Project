@@ -186,6 +186,13 @@ namespace StarterAssets
 
             CameraRotation();
         }
+        public void SetLookAngles(float pitch, float yaw)
+        {
+            _cinemachineTargetPitch = pitch;
+            _rotationVelocity = 0f;
+
+            transform.rotation = Quaternion.Euler(0, yaw, 0);
+        }
 
         public void LockMovement()
         {

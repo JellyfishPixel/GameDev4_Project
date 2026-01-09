@@ -352,42 +352,24 @@ public class ItemDialogueManager : MonoBehaviour
 
     IEnumerator ReleaseDialogueAndResetJump()
     {
-        // 1. รอให้ปล่อยปุ่ม
+        // 1. รอให้ปล่อยปุ่ม (กันกดค้างจาก Dialogue)
         while (Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.Tab))
             yield return null;
 
-        yield return null; // กัน input ค้าง 1 frame
+        // 2. กัน input ค้างเพิ่มอีก 1 frame
+        yield return null;
 
-        // 2. รีเซ็ตกล้องตามโหมด
-        if (stm != null)
+        // 3. รีเซ็ต controller ตาม CameraMode ปัจจุบัน
+        var camMgr = CameraModeManager.Instance;
+        if (camMgr != null)
         {
-            // 🔥 ถ้าเป็น First Person
-            if (stm.firstPersonCamera.gameObject.activeSelf)
-            {
-                var fpc = stm.firstPersonController;
-                if (fpc != null)
-                {
-                    fpc.enabled = false;
-                    yield return null;
-                    fpc.enabled = true;
-                }
-            }
-            // 🔥 ถ้าเป็น Third Person
-            else
-            {
-                var tpc = stm.thirdPersonController;
-                if (tpc != null)
-                {
-                    tpc.enabled = false;
-                    yield return null;
-                    tpc.enabled = true;
-                }
-            }
+            camMgr.ResetActiveControllerOneFrame();
         }
 
-        // 3. ค่อยปลด movement
+        // 4. ค่อยปลด movement
         movementLocker?.Unlock();
     }
+
 
 
 

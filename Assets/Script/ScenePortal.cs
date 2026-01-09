@@ -13,6 +13,7 @@ public class ScenePortal : MonoBehaviour
 
     [Header("Player Tag")]
     public string playerTag = "Player";
+    public CameraMode targetCameraMode;
 
     void OnTriggerEnter(Collider other)
     {
@@ -20,7 +21,12 @@ public class ScenePortal : MonoBehaviour
 
         if (SceneTransitionManager.Instance != null)
         {
-            SceneTransitionManager.Instance.WarpToScene(targetSceneName, targetSpawnId);
+
+            SceneTransitionManager.Instance.WarpToScene(
+                targetSceneName,
+                targetSpawnId,
+                targetCameraMode   // 👈 สำคัญ
+            );
         }
         else
         {

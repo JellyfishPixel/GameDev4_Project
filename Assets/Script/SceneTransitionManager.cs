@@ -1,51 +1,27 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
-using StarterAssets;
-using UnityEngine.InputSystem;
-using static PlayerInteractionSystem;
-
+using System.Collections;
 
 public class SceneTransitionManager : MonoBehaviour
 {
-    public static SceneTransitionManager Instance { get; private set; }
+    public static SceneTransitionManager Instance;
 
-    public GameObject InteractPoint;
-    [Header("Scene")]
-    public string mainSceneName = "Main";
-
-    [Header("Player")]
     public GameObject player;
 
-    [Header("Character Visual (Mesh / Prefab)")]
-    public GameObject characterVisual; // ปิดตอน First Person
+    string pendingSpawnId;
+    CameraMode pendingCameraMode;
+    bool waitingForScene;
+    public bool isTransitioning;
+    public bool IsInsideShop { get; private set; }
 
-    [Header("Cameras")]
-    public Camera firstPersonCamera;
-    public Camera thirdPersonCamera;
-    public Transform firstPersonCameraRoot;
-
-
-    [Header("Starter Assets Controllers")]
-    public FirstPersonController firstPersonController;
-    public ThirdPersonController thirdPersonController;
-    [SerializeField] private StarterAssetsInputs starterInput;
-
-    // ===== Warp =====
-    private string pendingSpawnId;
-    private bool hasPendingSpawn;
-
-    [Header("Interaction")]
-    public PlayerInteractionSystem interactionSystem;
 
     void Awake()
     {
-        if (Instance != null && Instance != this)
+        if (Instance != null)
         {
             Destroy(gameObject);
             return;
         }
-        starterInput = player.GetComponent<StarterAssetsInputs>();
-
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
@@ -54,208 +30,160 @@ public class SceneTransitionManager : MonoBehaviour
 
     void OnDestroy()
     {
-        if (Instance == this)
-            SceneManager.sceneLoaded -= OnSceneLoaded;
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
-    // =================================================
-    // 🌍 Warp
-    // =================================================
-    public void WarpToScene(string targetSceneName, string spawnId)
+    public void WarpToScene(
+        string sceneName,
+        string spawnId,
+        CameraMode cameraMode)
     {
-        pendingSpawnId = spawnId;
-        hasPendingSpawn = true;
+        if (isTransitioning) return;
 
-        SceneManager.LoadScene(targetSceneName);
+        StartCoroutine(WarpSceneRoutine(sceneName, spawnId, cameraMode));
+    }
+    IEnumerator WarpSceneRoutine(
+        string sceneName,
+        string spawnId,
+        CameraMode cameraMode)
+    {
+        if (isTransitioning) yield break;
+        isTransitioning = true;
+
+        // 🔒 ล็อกตั้งแต่เริ่ม
+        CameraModeManager.Instance.LockMode(true);
+
+        pendingSpawnId = spawnId;
+        pendingCameraMode = cameraMode;
+        waitingForScene = true;
+
+        if (FadeManager.Instance != null)
+        {
+            yield return FadeManager.Instance.FadeOut();
+            yield return null;
+        }
+
+        SceneManager.LoadScene(sceneName);
     }
 
-    // =================================================
-    // 🔁 Scene Loaded
-    // =================================================
+
+
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // ❗ สำคัญ: สลับโหมดก่อน
-        SwitchMode(scene.name);
+        if (!waitingForScene) return;
 
-        if (!hasPendingSpawn) return;
+        StartCoroutine(SpawnRoutine());
+        SetShopState(false);
+    }
+    public void SetShopState(bool insideShop)
+    {
+        IsInsideShop = insideShop;
 
-        SpawnPoint[] spawnPoints =
+        CameraModeManager.Instance.SetMode(
+            insideShop ? CameraMode.FirstPerson : CameraMode.ThirdPerson
+        );
+    }
+
+    IEnumerator SpawnRoutine()
+    {
+        yield return null;
+
+        SpawnPoint[] points =
             FindObjectsByType<SpawnPoint>(FindObjectsSortMode.None);
 
-        foreach (var sp in spawnPoints)
+        foreach (var sp in points)
         {
             if (sp.spawnId == pendingSpawnId)
             {
-                player.transform.position = sp.transform.position;
-                player.transform.rotation = sp.transform.rotation;
+                TeleportInternal(sp.transform, pendingCameraMode);
                 break;
             }
         }
 
-        hasPendingSpawn = false;
+        yield return null;
+
+        if (FadeManager.Instance != null)
+            yield return FadeManager.Instance.FadeIn();
+
+        // 🔓 ปลดล็อกตรงนี้
+        CameraModeManager.Instance.LockMode(false);
+        isTransitioning = false;
+
+        waitingForScene = false;
         pendingSpawnId = null;
     }
 
-    // =================================================
-    // 🎮 Mode Switch (SAFE)
-    // =================================================
-    void SwitchMode(string sceneName)
+
+    public void Teleport(Transform spawnPoint, CameraMode mode)
     {
-        bool isMain = sceneName == mainSceneName;
+        if (isTransitioning) return;
 
-        // ===== 1. ปิด Script ก่อน (กัน LateUpdate พัง) =====
-        if (firstPersonController != null)
-            firstPersonController.enabled = false;
+        StartCoroutine(TeleportWithFadeRoutine(spawnPoint, mode));
+    }
 
-        if (thirdPersonController != null)
-            thirdPersonController.enabled = false;
-        ResetStarterInput();
-        // ===== 2. สลับกล้อง =====
-        if (firstPersonCamera != null)
-            firstPersonCamera.gameObject.SetActive(isMain);
+    void TeleportInternal(
+        Transform spawn,
+        CameraMode mode)
+    {
+        var cc = player.GetComponent<CharacterController>();
+        var camMgr = CameraModeManager.Instance;
 
-        if (thirdPersonCamera != null)
-            thirdPersonCamera.gameObject.SetActive(!isMain);
+ 
+        camMgr.SetMode(mode);
 
-        // ===== 2.1 บอกระบบ Interact ว่ากล้องไหนคือ current =====
-        if (interactionSystem != null)
+        cc.enabled = false;
+        player.transform.position = spawn.position;
+        cc.enabled = true;
+
+    
+        var sp = spawn.GetComponent<SpawnPoint>();
+        if (sp != null)
         {
-            interactionSystem.SetCurrentCamera(
-                isMain ? firstPersonCamera : thirdPersonCamera
+            camMgr.ApplyRotation(
+                sp.overridePlayerRotation ? sp.playerEuler : null,
+                sp.overrideCameraRotation ? sp.cameraLook : null
             );
-            interactionSystem.interactRayMode =
-    isMain ? InteractRayMode.Camera : InteractRayMode.Player;
-
         }
-
-        InteractPoint.SetActive(isMain);
-        // ===== 3. ตัวละคร =====
-        if (characterVisual != null)
-            characterVisual.SetActive(!isMain); // FP = ปิด, TP = เปิด
-        if (isMain)
-        {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-        }
-        else
-        {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-        }
-        //InteractPoint.SetActive(isMain);
-        if (isMain && firstPersonController != null)
-        {
-            // 1. ปิด controller ก่อน
-            firstPersonController.enabled = false;
-
-            // 🔥 สลับ Action Map (จุดสำคัญ)
-
-            // 2. รีเซ็ต Player
-            player.transform.rotation =
-                Quaternion.Euler(0, player.transform.eulerAngles.y, 0);
-
-            // 3. 🔥 reset CameraRoot แบบ hard
-            HardResetFirstPersonCameraRoot();
-
-            // 4. รีเซ็ต CharacterController (สำคัญ)
-            var cc = player.GetComponent<CharacterController>();
-            if (cc != null)
-                cc.center = new Vector3(0, cc.height / 2f, 0);
-
-            // 5. เปิด controller ทีหลัง
-            firstPersonController.enabled = true;
-        }
-
-
-        else
-        {
-            if (thirdPersonController != null)
-                thirdPersonController.enabled = true;
-
-        }
-        
-        Debug.Log(isMain
-            ? "[SceneTransition] FIRST PERSON MODE"
-            : "[SceneTransition] THIRD PERSON MODE");
     }
 
-    void LateUpdate()
+    IEnumerator TeleportWithFadeRoutine(
+      Transform spawnPoint,
+      CameraMode mode)
     {
-        if (!firstPersonCameraRoot) return;
+        if (isTransitioning) yield break;
+        isTransitioning = true;
 
-        firstPersonCameraRoot.localPosition = new Vector3(0, 1.2f, 0);
-    }
-    void HardResetFirstPersonCameraRoot()
-    {
-        if (!firstPersonCameraRoot || !player) return;
-
-        // 🔥 บังคับ parent ใหม่ (สำคัญมาก)
-        firstPersonCameraRoot.SetParent(player.transform, false);
-
-        // 🔥 reset local space
-        firstPersonCameraRoot.localPosition = new Vector3(0, 0.2f, 0);
-        firstPersonCameraRoot.localRotation = Quaternion.identity;
-        firstPersonCameraRoot.localScale = Vector3.one;
-    }
-    void ResetStarterInput()
-    {
-        if (!starterInput) return;
-
-        starterInput.move = Vector2.zero;
-        starterInput.look = Vector2.zero;
-        starterInput.jump = false;
-        starterInput.sprint = false;
-    }
-    public void ForceFirstPerson(bool isFirstPerson)
-    {
-        // ปิด controller ก่อน (กัน LateUpdate / Input ค้าง)
-        if (firstPersonController) firstPersonController.enabled = false;
-        if (thirdPersonController) thirdPersonController.enabled = false;
-
-        ResetStarterInput();
-
-        // กล้อง
-        firstPersonCamera.gameObject.SetActive(isFirstPerson);
-        thirdPersonCamera.gameObject.SetActive(!isFirstPerson);
-
-        // Interact System
-        if (interactionSystem)
+        try
         {
-            interactionSystem.SetCurrentCamera(
-                isFirstPerson ? firstPersonCamera : thirdPersonCamera
-            );
+            // 🔒 ล็อก CameraMode ตั้งแต่เริ่ม
+            CameraModeManager.Instance.LockMode(true);
 
-            interactionSystem.interactRayMode =
-                isFirstPerson ? InteractRayMode.Camera : InteractRayMode.Player;
+            // 1. FadeOut
+            if (FadeManager.Instance != null)
+            {
+                yield return FadeManager.Instance.FadeOut();
+                yield return null; // ให้จอดำ render จริง
+            }
+
+            // 2. ตั้งโหมด + วาป ใต้จอดำ
+            TeleportInternal(spawnPoint, mode);
+
+            yield return null;
+
+            // 3. FadeIn
+            if (FadeManager.Instance != null)
+            {
+                yield return FadeManager.Instance.FadeIn();
+            }
         }
-
-        // ตัวละคร
-        if (characterVisual)
-            characterVisual.SetActive(!isFirstPerson);
-
-        // Cursor
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-
-        // เปิด controller ที่ถูกต้อง
-        if (isFirstPerson)
+        finally
         {
-            HardResetFirstPersonCameraRoot();
-
-            var cc = player.GetComponent<CharacterController>();
-            if (cc)
-                cc.center = new Vector3(0, cc.height / 2f, 0);
-
-            firstPersonController.enabled = true;
+            // 🔓 ปลดล็อกเมื่อทุกอย่างเสร็จ
+            CameraModeManager.Instance.LockMode(false);
+            isTransitioning = false;
         }
-        else
-        {
-            thirdPersonController.enabled = true;
-        }
-
-        Debug.Log(isFirstPerson
-            ? "[Zone] FIRST PERSON"
-            : "[Zone] THIRD PERSON");
     }
+
+
 
 }

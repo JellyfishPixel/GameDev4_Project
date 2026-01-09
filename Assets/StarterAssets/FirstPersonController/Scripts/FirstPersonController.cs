@@ -123,6 +123,13 @@ namespace StarterAssets
 			_jumpTimeoutDelta = JumpTimeout;
 			_fallTimeoutDelta = FallTimeout;
 		}
+        public void SetLookAngles(float pitch, float yaw)
+        {
+            _cinemachineTargetPitch = pitch;
+            _rotationVelocity = 0f;
+
+            transform.rotation = Quaternion.Euler(0, yaw, 0);
+        }
 
         private void Update()
         {

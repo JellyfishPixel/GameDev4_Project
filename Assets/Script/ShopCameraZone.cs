@@ -5,14 +5,17 @@ public class ShopCameraZone : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("Player")) return;
+        if (SceneTransitionManager.Instance.isTransitioning) return;
 
-        SceneTransitionManager.Instance?.ForceFirstPerson(true);
+        SceneTransitionManager.Instance.SetShopState(true);
     }
 
     private void OnTriggerExit(Collider other)
     {
         if (!other.CompareTag("Player")) return;
+        if (SceneTransitionManager.Instance.isTransitioning) return;
 
-        SceneTransitionManager.Instance?.ForceFirstPerson(false);
+        SceneTransitionManager.Instance.SetShopState(false);
     }
+
 }
