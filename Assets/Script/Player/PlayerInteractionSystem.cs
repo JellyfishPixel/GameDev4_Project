@@ -3,15 +3,39 @@ using UnityEngine;
 
 public class PlayerInteractionSystem : MonoBehaviour
 {
-    [Header("Camera")]
-    public Camera playerCamera;
+    public enum InteractionType
+    {
+        Primary,    // ใช้, คุย, เปิด
+        Secondary,  // สำรอง
+        Alternate   // พิเศษ
+    }
+    public enum InteractRayMode
+    {
+        Camera,   // First Person
+        Player    // Third Person
+    }
 
+    [Header("Interact Keys")]
+    public KeyCode[] primaryInteractKeys;   // E, Mouse0
+    public KeyCode[] secondaryInteractKeys; // F
     [Header("Interact")]
-    public KeyCode interactKey = KeyCode.Mouse0;
     public float interactDistance = 3f;
+    public LayerMask interactMask = ~0;
+
+    [Header("Camera")]
+    public Camera playerCamera; // fallback เท่านั้น
+
+    public Camera currentCamera;
+    [Header("Interact Ray")]
+    public InteractRayMode interactRayMode = InteractRayMode.Camera;
+
+    // ใช้ตอน Third Person (เช่น chest / center)
+    public Transform playerRayOrigin;
+
+
 
     [Header("Pickup")]
-    public KeyCode pickupKey = KeyCode.Mouse0;   // คลิกซ้าย
+    public KeyCode pickupKey = KeyCode.Mouse0;
     public float pickupDistance = 4f;
     public string pickableTag = "pickable";
 
@@ -21,18 +45,15 @@ public class PlayerInteractionSystem : MonoBehaviour
     public float scrollYawSpeed = 160f;
 
     [Header("Box Inventory")]
-    public KeyCode storeBoxKey = KeyCode.E;   // กด E ตอนถือกล่อง = เก็บเข้าตัว
+    public KeyCode storeBoxKey = KeyCode.E;
 
     bool isMovementLocked = false;
+
     // ---------- held state ----------
     public GameObject HeldObject { get; private set; }
     Rigidbody heldRb;
     Transform originalParent;
     Quaternion targetLocalRot;
-
-    bool prevKinematic, prevUseGravity, prevDetectCollisions;
-    RigidbodyInterpolation prevInterp;
-    CollisionDetectionMode prevCdm;
 
     struct ColState { public Collider col; public bool enabled; }
     struct LayerState { public Transform t; public int layer; }
@@ -41,59 +62,34 @@ public class PlayerInteractionSystem : MonoBehaviour
     readonly List<LayerState> layerStates = new();
 
     int holdLayer = -1;
-
     void Awake()
     {
-        if (!playerCamera) playerCamera = Camera.main;
+        // fallback เท่านั้น
+        if (!playerCamera)
+            playerCamera = Camera.main;
 
-        if (!holdPoint && playerCamera)
+        // ตั้งค่าเริ่มต้นให้ currentCamera
+        if (!currentCamera)
+            currentCamera = playerCamera;
+
+        if (!holdPoint && currentCamera)
         {
             var go = new GameObject("HoldPoint");
             holdPoint = go.transform;
-            holdPoint.SetParent(playerCamera.transform, false);
+            holdPoint.SetParent(currentCamera.transform, false);
             holdPoint.localPosition = new Vector3(0, 0, 1.0f);
             holdPoint.localRotation = Quaternion.identity;
         }
 
-        if (!string.IsNullOrEmpty(holdLayerName))
-        {
-            holdLayer = LayerMask.NameToLayer(holdLayerName);
-            if (holdLayer < 0)
-                Debug.LogWarning($"[PlayerInteractionSystem] Layer '{holdLayerName}' ยังไม่มีใน Project Settings > Tags and Layers");
-        }
+        holdLayer = LayerMask.NameToLayer(holdLayerName);
     }
 
     void Update()
     {
         if (isMovementLocked) return;
 
-            if (Input.GetKeyDown(storeBoxKey))
-        {
-            if (HeldObject != null)
-                StoreHeldBoxToInventory();
-            else
-                TryInteract(); 
-        }
-
-        if (Input.GetKeyDown(interactKey))
-        {
-            // ถ้ามีไดอะล็อกอยู่ → ใช้กดข้าม/ต่อแทน
-            if (ItemDialogueManager.Instance != null && ItemDialogueManager.Instance.IsShowing)
-            {
-                ItemDialogueManager.Instance.SkipTypingOrNext();
-                return;
-            }
-
-            // ปกติ: raycast หา IInteractable แล้วเรียก Interact(player)
-            TryInteract();
-        }
-
-        if (Input.GetKeyDown(pickupKey))
-        {
-            if (HeldObject == null) TryPickup();
-            else Drop();
-        }
-
+        HandleInteractInput();
+        HandlePickupInput();
         HandleHoldRotation();
     }
 
@@ -106,40 +102,128 @@ public class PlayerInteractionSystem : MonoBehaviour
             HeldObject.transform.localRotation = targetLocalRot;
         }
     }
-
-    #region Interact
-
-    void TryInteract()
+    bool IsAnyKeyDown(KeyCode[] keys)
     {
-        if (!playerCamera) return;
+        foreach (var k in keys)
+            if (Input.GetKeyDown(k))
+                return true;
+        return false;
+    }
+    void HandlePickupInput()
+    {
+        if (!Input.GetKeyDown(pickupKey)) return;
 
-        Ray ray = new(playerCamera.transform.position, playerCamera.transform.forward);
-        if (Physics.Raycast(ray, out var hit, interactDistance, ~0, QueryTriggerInteraction.Ignore))
-        {
-            var interactable = hit.collider.GetComponent<IInteractable>() ??
-                               hit.collider.GetComponentInParent<IInteractable>();
-
-            if (interactable != null)
-                interactable.Interact(this);
-        }
+        if (HeldObject == null)
+            TryPickup();
+        else
+            Drop();
     }
 
-    #endregion
+    void HandleInteractInput()
+    {
+        InteractionType? type = null;
 
-    #region Pickup
+        if (IsAnyKeyDown(primaryInteractKeys))
+            type = InteractionType.Primary;
+        else if (IsAnyKeyDown(secondaryInteractKeys))
+            type = InteractionType.Secondary;
 
+        if (type == null) return;
+        if (type == InteractionType.Secondary)
+        {
+            // ต้องถือกล่องอยู่
+            if (HeldObject != null)
+            {
+                // เช็คว่ากล้องกำลังเล็งกล่องที่เสร็จแล้วหรือไม่
+                if (CanStoreHeldBox())
+                {
+                    StoreHeldBoxToInventory();
+                }
+                else
+                {
+                    Debug.Log("กล่องยังไม่เสร็จ เก็บไม่ได้");
+                }
+                return;
+            }
+        }
+        if (ItemDialogueManager.Instance != null &&
+            ItemDialogueManager.Instance.IsShowing)
+        {
+            return;
+        }
+
+        TryInteract(type.Value);
+    }
+    bool CanStoreHeldBox()
+    {
+        if (HeldObject == null) return false;
+
+        var box = HeldObject.GetComponent<BoxCore>();
+        if (!box) return false;
+
+        // ✅ แค่เช็คว่าเสร็จแล้วพอ
+        if (box.Step != BoxStep.Labeled)
+            return false;
+
+        return true;
+    }
+
+
+    void TryInteract(InteractionType interactionType)
+    {
+        if (!TryGetInteractRay(out Ray ray)) return;
+
+        if (!Physics.Raycast(ray, out var hit, interactDistance, interactMask,
+            QueryTriggerInteraction.Ignore))
+            return;
+
+        var interactable =
+            hit.collider.GetComponent<IInteractable>() ??
+            hit.collider.GetComponentInParent<IInteractable>();
+
+        interactable?.Interact(this, interactionType);
+
+    }
+
+    public bool TryGetInteractRay(out Ray ray)
+    {
+        ray = default;
+
+        switch (interactRayMode)
+        {
+            case InteractRayMode.Camera:
+                if (!currentCamera) return false;
+                ray = new Ray(
+                    currentCamera.transform.position,
+                    currentCamera.transform.forward
+                );
+                return true;
+
+            case InteractRayMode.Player:
+                if (!playerRayOrigin) return false;
+                ray = new Ray(
+                    playerRayOrigin.position,
+                    playerRayOrigin.forward
+                );
+                return true;
+        }
+
+        return false;
+    }
     void TryPickup()
     {
-        if (!playerCamera || !holdPoint) return;
+        if (!TryGetInteractRay(out Ray ray) || !holdPoint) return;
 
-        Ray ray = new(playerCamera.transform.position, playerCamera.transform.forward);
-        if (!Physics.Raycast(ray, out var hit, pickupDistance, ~0, QueryTriggerInteraction.Ignore))
+        int mask = ~LayerMask.GetMask(holdLayerName);
+
+        if (!Physics.Raycast(ray, out var hit, pickupDistance, mask,
+            QueryTriggerInteraction.Ignore))
             return;
 
         if (!hit.transform.CompareTag(pickableTag))
             return;
 
-        var rb = hit.rigidbody ? hit.rigidbody : hit.transform.GetComponent<Rigidbody>();
+        var rb = hit.rigidbody ?? hit.transform.GetComponent<Rigidbody>();
         if (!rb) return;
 
         Grab(rb);
@@ -151,19 +235,11 @@ public class PlayerInteractionSystem : MonoBehaviour
         heldRb = rb;
         originalParent = HeldObject.transform.parent;
 
-        prevKinematic = heldRb.isKinematic;
-        prevUseGravity = heldRb.useGravity;
-        prevDetectCollisions = heldRb.detectCollisions;
-        prevInterp = heldRb.interpolation;
-        prevCdm = heldRb.collisionDetectionMode;
-
         heldRb.linearVelocity = Vector3.zero;
         heldRb.angularVelocity = Vector3.zero;
 
         heldRb.useGravity = false;
         heldRb.detectCollisions = false;
-        heldRb.interpolation = RigidbodyInterpolation.None;
-        heldRb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
         heldRb.isKinematic = true;
 
         colStates.Clear();
@@ -179,7 +255,6 @@ public class PlayerInteractionSystem : MonoBehaviour
         HeldObject.transform.localPosition = Vector3.zero;
         HeldObject.transform.localRotation = Quaternion.identity;
         targetLocalRot = Quaternion.identity;
-
     }
 
     public void StoreHeldBoxToInventory()
@@ -232,27 +307,16 @@ public class PlayerInteractionSystem : MonoBehaviour
     {
         if (!HeldObject) return;
 
-        // เอาออกจากมือ กลับไป parent เดิม
         HeldObject.transform.SetParent(originalParent, true);
 
-        // ให้กล่องตั้งตรงก่อนปล่อย
-        if (playerCamera)
+        if (currentCamera)
         {
-
             Vector3 up = Vector3.up;
-
-
-            Vector3 forward = Vector3.ProjectOnPlane(playerCamera.transform.forward, up);
-            if (forward.sqrMagnitude < 0.0001f)
-                forward = Vector3.forward; 
-
-            forward.Normalize();
+            Vector3 forward = Vector3.ProjectOnPlane(currentCamera.transform.forward, up).normalized;
             HeldObject.transform.rotation = Quaternion.LookRotation(forward, up);
         }
 
-
         RestoreLayers();
-
 
         foreach (var s in colStates)
             if (s.col) s.col.enabled = s.enabled;
@@ -260,12 +324,9 @@ public class PlayerInteractionSystem : MonoBehaviour
 
         if (heldRb)
         {
-            heldRb.isKinematic = false;                   
-            heldRb.useGravity = true;                       
+            heldRb.isKinematic = false;
+            heldRb.useGravity = true;
             heldRb.detectCollisions = true;
-            heldRb.interpolation = RigidbodyInterpolation.Interpolate;
-            heldRb.collisionDetectionMode = CollisionDetectionMode.Continuous;
-            heldRb.angularVelocity = Vector3.zero;
         }
 
         HeldObject = null;
@@ -281,18 +342,16 @@ public class PlayerInteractionSystem : MonoBehaviour
 
         float wheel = Input.GetAxis("Mouse ScrollWheel");
         if (Mathf.Abs(wheel) > 0.0005f)
-            targetLocalRot = Quaternion.AngleAxis(wheel * scrollYawSpeed, Vector3.up) * targetLocalRot;
+            targetLocalRot =
+                Quaternion.AngleAxis(wheel * scrollYawSpeed, Vector3.up) * targetLocalRot;
     }
 
-    #endregion
 
-    #region Layer helpers
 
     void CacheAndSetLayerRecursive(Transform root, int newLayer)
     {
         layerStates.Clear();
-        var all = root.GetComponentsInChildren<Transform>(true);
-        foreach (var t in all)
+        foreach (var t in root.GetComponentsInChildren<Transform>(true))
         {
             layerStates.Add(new LayerState { t = t, layer = t.gameObject.layer });
             if (newLayer >= 0)
@@ -306,13 +365,9 @@ public class PlayerInteractionSystem : MonoBehaviour
             if (s.t) s.t.gameObject.layer = s.layer;
     }
 
-    #endregion
-
     public void LockMovement()
     {
         isMovementLocked = true;
-
-
         var controller = GetComponent<CharacterController>();
         if (controller) controller.enabled = false;
     }
@@ -320,7 +375,6 @@ public class PlayerInteractionSystem : MonoBehaviour
     public void UnlockMovement()
     {
         isMovementLocked = false;
-
         var controller = GetComponent<CharacterController>();
         if (controller) controller.enabled = true;
     }
@@ -329,4 +383,20 @@ public class PlayerInteractionSystem : MonoBehaviour
     {
         return isMovementLocked;
     }
+
+    public void SetCurrentCamera(Camera cam)
+    {
+        if (cam == null)
+        {
+            Debug.LogWarning("[PlayerInteractionSystem] SetCurrentCamera called with null");
+            return;
+        }
+
+        currentCamera = cam;
+    }
+    public Camera GetCurrentCamera()
+    {
+        return currentCamera;
+    }
+
 }

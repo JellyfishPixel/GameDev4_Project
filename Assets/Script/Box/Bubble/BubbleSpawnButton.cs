@@ -5,8 +5,12 @@ public class BubbleSpawnButton : MonoBehaviour, IInteractable
     public BubbleType bubbleType = BubbleType.Basic;
     private BoxBubble targetBubble;
 
-    public void Interact(PlayerInteractionSystem interactor)
+    public void Interact(PlayerInteractionSystem interactor,
+                         PlayerInteractionSystem.InteractionType type)
     {
+        // Mouse0 เท่านั้น
+        if (type != PlayerInteractionSystem.InteractionType.Primary)
+            return;
         var currentBox = BoxCore.Current;
         if (currentBox == null)
         {
@@ -38,18 +42,10 @@ public class BubbleSpawnButton : MonoBehaviour, IInteractable
         // หักสต็อก
         if (!eco.TryConsumeBubble(bubbleType))
             return;
-
-<<<<<<< HEAD
-        var shopUI = FindFirstObjectByType<BoxShopUI>();
-        if (shopUI != null)
-            shopUI.RefreshUI();
+        var shopUI = FindFirstObjectByType<BoxShopUI>(); if (shopUI != null) shopUI.RefreshUI(); 
 
 
 
-
-
-=======
->>>>>>> origin/main
         // ✅ เซ็ตประเภทบับเบิลให้กล่อง (ใช้ในเรื่องดาเมจ / ลาย / ฯลฯ)
         currentBox.ApplyBubbleType(bubbleType);
         currentBox.hasIceBubble = (bubbleType == BubbleType.Ice);

@@ -2,6 +2,7 @@
 using TMPro;
 using UnityEngine;
 
+
 public class BoxShopUI : MonoBehaviour
 {
     [Header("Root Panel")]
@@ -21,6 +22,23 @@ public class BoxShopUI : MonoBehaviour
     public TMP_Text nameTapeRed;
     public TMP_Text nameTapeBlue;
     public TMP_Text nameTapeGreen;
+    [Header("BOX")]
+    public TMP_Text boxS;
+    public TMP_Text boxM;
+    public TMP_Text boxL;
+    public TMP_Text boxCold;
+    public TMP_Text boxWaterM;
+    public TMP_Text boxWaterL;
+
+    [Header("TAPE (uses)")]
+    public TMP_Text tapeRed;
+    public TMP_Text tapeBlue;
+    public TMP_Text tapeGreen;
+
+    [Header("BUBBLE (uses)")]
+    public TMP_Text bubbleBasic;
+    public TMP_Text bubbleStrong;
+    public TMP_Text bubbleIce;
 
     [Header("Price / unit")]
     public int priceS = 10;
@@ -90,6 +108,7 @@ public class BoxShopUI : MonoBehaviour
             rootPanel.SetActive(false);
         isOpen = false;
         interactui = FindFirstObjectByType<interactUI>();
+        RefreshUI();
         
     }
     int CalculateCurrentTotalCost()
@@ -167,17 +186,6 @@ public class BoxShopUI : MonoBehaviour
         qtyBubbleBasic = qtyBubbleStrong = qtyBubbleIce = 0;
         qtyTapeRed = qtyTapeBlue = qtyTapeGreen = 0;
     }
-    void OnEnable()
-    {
-        if (EconomyManager.Instance != null)
-            EconomyManager.Instance.OnStockChanged += RefreshUI;
-    }
-
-    void OnDisable()
-    {
-        if (EconomyManager.Instance != null)
-            EconomyManager.Instance.OnStockChanged -= RefreshUI;
-    }
 
     public void RefreshUI()
     {
@@ -216,6 +224,23 @@ public class BoxShopUI : MonoBehaviour
             if (nameTapeRed) nameTapeRed.text = WithStock("Tape Red", eco.tapeUsesRed);
             if (nameTapeBlue) nameTapeBlue.text = WithStock("Tape Blue", eco.tapeUsesBlue);
             if (nameTapeGreen) nameTapeGreen.text = WithStock("Tape Green", eco.tapeUsesGreen);
+
+            if (boxS) boxS.text = WithStock("Small Box", eco.boxStockS);
+            if (boxM) boxM.text = WithStock("Medium Box", eco.boxStockM);
+            if (boxL) boxL.text = WithStock("Large Box", eco.boxStockL);
+            if (boxCold) boxCold.text = WithStock("Cold Box", eco.boxStockCold);
+            if (boxWaterM) boxWaterM.text = WithStock("Waterproof M", eco.boxStockWaterM);
+            if (boxWaterL) boxWaterL.text = WithStock("Waterproof L", eco.boxStockWaterL);
+
+
+            if (bubbleBasic) bubbleBasic.text = WithStock("Bubble Basic", eco.bubbleUsesBasic);
+            if (bubbleStrong) bubbleStrong.text = WithStock("Bubble Strong", eco.bubbleUsesStrong);
+            if (bubbleIce) bubbleIce.text = WithStock("Bubble Ice", eco.bubbleUsesIce);
+
+
+            if (tapeRed) tapeRed.text = WithStock("Tape Red", eco.tapeUsesRed);
+            if (tapeBlue) tapeBlue.text = WithStock("Tape Blue", eco.tapeUsesBlue);
+            if (tapeGreen) tapeGreen.text = WithStock("Tape Green", eco.tapeUsesGreen);
         }
         if (eco && cashText)
             cashText.text = $"CASH : {eco.TotalFunds}$";

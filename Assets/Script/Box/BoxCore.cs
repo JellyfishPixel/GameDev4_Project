@@ -289,8 +289,6 @@ public class BoxCore : MonoBehaviour
         {
             hasItem = IsPickableStillInside();
 
-            // ถ้าไม่มีของแล้ว และยัง "ไม่เคย" ใส่บับเบิล → reset เป็น Empty
-            // ถ้าเคยใส่บับเบิลแล้ว (step >= BubbleDone) → ห้ามย้อนกลับไป Empty
             if (!hasItem && step == BoxStep.ItemInside)
             {
                 step = BoxStep.Empty;

@@ -26,7 +26,6 @@ public class EconomyManager : MonoBehaviour
 
     [Tooltip("เงินกองกลาง/ธนาคาร ข้ามวัน ข้ามซีน ใช้ซื้อของ/อัปเกรด")]
     public int bankBalance = 0;
-    public event System.Action OnStockChanged;
 
     [Tooltip("ดูอย่างเดียว: เงินทั้งหมดที่เอาไปซื้อของได้ตอนนี้ = cashToday + bankBalance")]
     public int TotalFunds => cashToday + bankBalance;
@@ -59,7 +58,7 @@ public class EconomyManager : MonoBehaviour
 
 
 
-    [SerializeField] bool loadFromSaveOnStart = false;   // เปิดใน Inspector ได้
+    [SerializeField] bool loadFromSaveOnStart = false;
     [Header("Tape Stock (uses)")]
     [Tooltip("จำนวนครั้งที่ยังใช้ได้ของเทปสีแดง (1 ม้วน = 10 ครั้ง)")]
     public int tapeUsesRed = 0;
@@ -334,13 +333,12 @@ public class EconomyManager : MonoBehaviour
         if (current <= 0) return false;
 
         SetTapeUses(color, current - 1);
-        SaveIfAllowed();
 
-        OnStockChanged?.Invoke(); // ✅
+        SaveIfAllowed();
+        // ไม่จำเป็นต้อง UpdateMoneyUI เพราะเงินไม่เกี่ยว แต่จะเรียกก็ได้
         return true;
     }
-
-
+    // ========== API สต็อกบับเบิล ==========
     int GetBubbleUses(BubbleType type)
     {
         return type switch
@@ -390,11 +388,8 @@ public class EconomyManager : MonoBehaviour
 
         SetBubbleUses(type, current - 1);
         SaveIfAllowed();
-
-        OnStockChanged?.Invoke(); // ✅
         return true;
     }
-
 
 
     public void SaveToPrefs()

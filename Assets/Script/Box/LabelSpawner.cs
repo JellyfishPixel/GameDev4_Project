@@ -6,7 +6,7 @@ using UnityEngine;
 /// - มีจุด spawn ของตัวเอง
 /// - ปริ้น label ออกมาพร้อมอนิเมชั่นเลื่อน (ไม่เปลี่ยน scale)
 /// </summary>
-public class LabelSpawner : MonoBehaviour
+public class LabelSpawner : MonoBehaviour, IInteractable
 {
     public static LabelSpawner Instance { get; private set; }
 
@@ -39,10 +39,10 @@ public class LabelSpawner : MonoBehaviour
         }
         Instance = this;
     }
-
-    /// <summary>
-    /// ให้ BoxCore / ระบบอื่นเรียกเวลาอยากให้เครื่องปริ้นฉลาก
-    /// </summary>
+    public void Interact(PlayerInteractionSystem interactor,
+                        PlayerInteractionSystem.InteractionType type)
+    {
+    }
     public void PrintLabel()
     {
         if (labelPrefab == null || spawnPoint == null)
