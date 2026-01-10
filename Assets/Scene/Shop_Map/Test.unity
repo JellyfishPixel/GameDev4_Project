@@ -2011,6 +2011,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36b13523d4f176a429d40cbf7d20e3e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneTransitionManager
+  player: {fileID: 0}
+  isTransitioning: 0
 --- !u!1 &250292026
 GameObject:
   m_ObjectHideFlags: 0
@@ -7558,6 +7560,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpawnPoint
   spawnId: FromMain
+  overridePlayerRotation: 1
+  playerEuler: {x: 0, y: 0, z: 0}
+  overrideCameraRotation: 1
+  cameraLook: {x: 0, y: 0}
 --- !u!1 &711388610
 GameObject:
   m_ObjectHideFlags: 0
@@ -7954,6 +7960,18 @@ MonoBehaviour:
   nameTapeRed: {fileID: 1895049471}
   nameTapeBlue: {fileID: 369271410}
   nameTapeGreen: {fileID: 1360304014}
+  boxS: {fileID: 0}
+  boxM: {fileID: 0}
+  boxL: {fileID: 0}
+  boxCold: {fileID: 0}
+  boxWaterM: {fileID: 0}
+  boxWaterL: {fileID: 0}
+  tapeRed: {fileID: 0}
+  tapeBlue: {fileID: 0}
+  tapeGreen: {fileID: 0}
+  bubbleBasic: {fileID: 0}
+  bubbleStrong: {fileID: 0}
+  bubbleIce: {fileID: 0}
   priceS: 10
   priceM: 15
   priceL: 20
@@ -9925,10 +9943,6 @@ MonoBehaviour:
   supportRichText: 1
   perCharSfx: {fileID: 0}
   sfxEveryNChars: 2
-  nextButton: {fileID: 1585192154}
-  player: {fileID: 1590655082}
-  hasEverTalked: 0
-  advanceCooldown: 0.12
 --- !u!1 &917632188
 GameObject:
   m_ObjectHideFlags: 0
@@ -13469,6 +13483,7 @@ MonoBehaviour:
   targetSceneName: Map
   targetSpawnId: FromMap
   playerTag: Player
+  targetCameraMode: 0
 --- !u!65 &1200537796
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -17440,6 +17455,67 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1585192152}
   m_CullTransparentMesh: 1
+--- !u!1001 &1586165061
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: a4e0da98c50e1d2429d09a75aa5a683a, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.27433395
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a4e0da98c50e1d2429d09a75aa5a683a, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.94
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a4e0da98c50e1d2429d09a75aa5a683a, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.06
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a4e0da98c50e1d2429d09a75aa5a683a, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a4e0da98c50e1d2429d09a75aa5a683a, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a4e0da98c50e1d2429d09a75aa5a683a, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a4e0da98c50e1d2429d09a75aa5a683a, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a4e0da98c50e1d2429d09a75aa5a683a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a4e0da98c50e1d2429d09a75aa5a683a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a4e0da98c50e1d2429d09a75aa5a683a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: a4e0da98c50e1d2429d09a75aa5a683a, type: 3}
+      propertyPath: m_Name
+      value: T-PoseBonnie
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: a4e0da98c50e1d2429d09a75aa5a683a, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: a8a044bf437be4d47a8f63aea9f12cbf, type: 2}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: a4e0da98c50e1d2429d09a75aa5a683a, type: 3}
 --- !u!1 &1590655070 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8616685848737228372, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
@@ -17497,6 +17573,7 @@ MonoBehaviour:
   currentDay: 1
   currentHour: 8
   currentMinute: 0
+  directionArrowUI: {fileID: 0}
   realSecondsPerGameHour: 30
   totalMoney: 0
   clockText: {fileID: 1719917080}
@@ -17568,9 +17645,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b8924adf86667e49a1a5832850aa476, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInteractionSystem
-  playerCamera: {fileID: 1416627061}
-  interactKey: 323
+  primaryInteractKeys: 
+  secondaryInteractKeys: 
   interactDistance: 10
+  interactMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  playerCamera: {fileID: 1416627061}
+  currentCamera: {fileID: 0}
+  interactRayMode: 0
+  playerRayOrigin: {fileID: 0}
   pickupKey: 323
   pickupDistance: 10
   pickableTag: pickable
@@ -17595,17 +17679,6 @@ MonoBehaviour:
   inventoryDamageDivisor: 2
   waterSensitiveDamagePerSecond: 1
   slots: []
---- !u!114 &1590655082 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8616685848737228371, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
-  m_PrefabInstance: {fileID: 1253832358}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1590655070}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 55919ac34a26952479f3fc91f777b2fa, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1617194148
 GameObject:
   m_ObjectHideFlags: 0
@@ -21469,7 +21542,7 @@ MonoBehaviour:
   playerIcon: {fileID: 8655379}
   worldMin: {fileID: 1390946880}
   worldMax: {fileID: 748311205}
-  player: {fileID: 1590655071}
+  playerTransform: {fileID: 0}
   deliveryIconPrefab: {fileID: 252378543}
   ui: {fileID: 989860896}
   IsColse: 0
@@ -23444,3 +23517,4 @@ SceneRoots:
   - {fileID: 1105330842}
   - {fileID: 122060747}
   - {fileID: 831656226}
+  - {fileID: 1586165061}
